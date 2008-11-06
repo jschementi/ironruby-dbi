@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0043)http://ruby-dbi.rubyforge.org/DBD_SPEC.html -->
+<HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>DBD Specification Version 0.1 (Draft)</TITLE>
+<LINK href="./DBD Specification Version 0.22 (Draft)_files/rubyStyle.css" type="text/css" rel="stylesheet">
+</HEAD><BODY>
+<H1><A name="label-0" id="label-0">DBD Specification Version 0.2.2 (Draft)</A></H1><!-- RDLabel: "DBD Specification Version 0.2.2 (Draft)" -->
+<P>by Michael Neumann (mneumann@fantasy-coders.de)</P>
+<PRE>$Id: DBD_SPEC,v 1.3 2003/01/22 10:52:03 mneumann Exp $</PRE>
+<H2><A name="label-1" id="label-1">DBD Directory Layout</A></H2><!-- RDLabel: "DBD Directory Layout" -->
+<P>The directory layout is the following:</P>
+<PRE>DBD/
+DBD/Driver1
+DBD/Driver1/Driver1.rb
+DBD/Driver1/helper.rb
+.
+.
+
+DBD/Driver2
+.
+.
+.</PRE>
+<P>Where &quot;Driver1&quot; and &quot;Driver2&quot; are DBD driver names.
+For example, if you have two drivers installed named &quot;Oracle&quot; and 
+&quot;Sybase&quot;, the layout would look like:</P>
+<PRE>DBD/
+DBD/Oracle
+DBD/Oracle/Oracle.rb         # &lt;== this is the main driver
+DBD/Oracle/oracle.so         # &lt;== is used by Oracle.rb
+
+DBD/Sybase/Sybase.so         # &lt;== this is the main driver
+                             # has no helper files</PRE>
+<P>When DBI loads a DBD driver, it searches all &quot;DBD&quot; directories in Ruby&#39;s
+LOAD_PATH ($:).</P>
+<P>Database dependent functions, that should be callable with <CODE>DBI::func</CODE>, must
+use the prefix &quot;__&quot; before their method names, to prevent nameclashes with 
+further versions of Ruby/DBI!</P>
+<H2><A name="label-2" id="label-2">Driver Name</A></H2><!-- RDLabel: "Driver Name" -->
+<P>The DBD driver is simply named after the Database, e.g., Oracle, DB2, etc.
+The suffix normally will be &quot;.rb&quot; but can be any other valid suffix that is
+possible for Ruby to load, e.g., &quot;.so&quot;, &quot;.sl&quot; or &quot;.dll&quot;, and depends
+for non-Ruby DBD driver on the underlying operating system.
+When I refer to the driver name, then I speak of the filename without
+the suffix, e.g., Oracle or DB2.</P>
+<P>The name specified in the DSN <A name="footmark-1" id="footmark-1" href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#foottext-1"><SUP><SMALL>*1</SMALL></SUP></A> 
+must be the same as the driver name. </P>
+<H2><A name="label-3" id="label-3">Classes provided by a DBD</A></H2><!-- RDLabel: "Classes provided by a DBD" -->
+<P>A DBD driver has to provide three classes in the namespace
+<CODE>DBI::DBD::</CODE><EM>DriverName</EM>, where <EM>DriverName</EM> is the name of the 
+driver, e.g., Oracle or DB2.</P>
+<P>The three classes must be named <CODE>Driver</CODE>, <CODE>Database</CODE> and <CODE>Statement</CODE>.</P>
+<H2><A name="label-4" id="label-4">Class Driver</A></H2><!-- RDLabel: "Class Driver" -->
+<P>This class must inherit from <CODE>DBI::BaseDriver</CODE>.</P>
+<H3><A name="label-5" id="label-5">Methods that must be provided by <CODE>Driver</CODE></A></H3><!-- RDLabel: "Methods that must be provided by Driver" -->
+<DL>
+<DT><A name="label-6" id="label-6"><CODE>connect( <VAR>dbname</VAR>, <VAR>user</VAR>, <VAR>auth</VAR>, <VAR>attr</VAR> )</CODE></A></DT><!-- RDLabel: "connect" -->
+<DD>
+Connects to a database and returns a newly created <CODE>Database</CODE> object.</DD>
+</DL>
+<H3><A name="label-7" id="label-7">Optional methods that can be specified by <CODE>Driver</CODE></A></H3><!-- RDLabel: "Optional methods that can be specified by Driver" -->
+<DL>
+<DT><A name="label-8" id="label-8"><CODE>default_user</CODE></A></DT><!-- RDLabel: "default_user" -->
+<DD>
+<P>Returns an array of the form <CODE>[&#39;username&#39;, &#39;password&#39;]</CODE> which represents
+the default user when no username and password were specified.</P>
+<P>Defaults to <CODE>[&#39;&#39;, &#39;&#39;]</CODE> if not implemented.</P></DD>
+<DT><A name="label-9" id="label-9"><CODE>default_attributes</CODE></A></DT><!-- RDLabel: "default_attributes" -->
+<DD>
+<P>Returns a <CODE>Hash</CODE> containing the default attributes that are used
+in <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-6">connect</A> in addition to the ones the user specifies.</P>
+<P>Defaults to <CODE>{}</CODE> (empty hash) if not implemented.   </P></DD>
+<DT><A name="label-10" id="label-10"><CODE>data_sources</CODE></A></DT><!-- RDLabel: "data_sources" -->
+<DD>
+<P>Returns an array of all valid DSNs this driver can access.</P>
+<P>Defaults to <CODE>[]</CODE> (empty array) if not implemented.     </P></DD>
+<DT><A name="label-11" id="label-11"><CODE>disconnect_all</CODE></A></DT><!-- RDLabel: "disconnect_all" -->
+<DD>
+<P>Disconnects all connections made with this driver.</P>
+<P>If this method is not implemented,
+the default is to raise a NotImplementedError exception.</P></DD>
+</DL>
+<H2><A name="label-12" id="label-12">Class Database</A></H2><!-- RDLabel: "Class Database" -->
+<P>This class must inherit from <CODE>DBI::BaseDatabase</CODE>.</P>
+<H3><A name="label-13" id="label-13">Methods that must be provided by <CODE>Database</CODE></A></H3><!-- RDLabel: "Methods that must be provided by Database" -->
+<DL>
+<DT><A name="label-14" id="label-14"><CODE>disconnect</CODE></A></DT><!-- RDLabel: "disconnect" -->
+<DD>
+Disconnects from the database.
+But you must first roll back all outstanding transactions, so 
+all changes not yet committed get lost (are discarded).</DD>
+<DT><A name="label-15" id="label-15"><CODE>prepare( <VAR>statement</VAR> )</CODE></A></DT><!-- RDLabel: "prepare" -->
+<DD>
+Prepares the SQL <VAR>statement</VAR> and returns an object of class <CODE>Statement</CODE>.</DD>
+<DT><A name="label-16" id="label-16"><CODE>ping</CODE></A></DT><!-- RDLabel: "ping" -->
+<DD>
+<P>Pings the database to check whether the connection is alive.
+This can be implemented by executing a SQL statement like
+&quot;SELECT 1 FROM DUAL&quot; for Oracle database.
+For other databases,
+this should be a query on a table that normally always exists.</P>
+<P>Returns <CODE>true</CODE> if the connection is alive, otherwise <CODE>false</CODE>.</P></DD>
+</DL>
+<H3><A name="label-17" id="label-17">Optional methods that can be specified by <CODE>Database</CODE></A></H3><!-- RDLabel: "Optional methods that can be specified by Database" -->
+<DL>
+<DT><A name="label-18" id="label-18"><CODE>commit</CODE></A></DT><!-- RDLabel: "commit" -->
+<DT><A name="label-19" id="label-19"><CODE>rollback</CODE></A></DT><!-- RDLabel: "rollback" -->
+<DD>
+<P>Commits or rolls back the current transaction.</P>
+<P>The default is to raise a NotSupportedError exception, so if the database does not implement 
+transactions (mSQL, MySQL, CSV), do not overwrite this method.</P></DD>
+<DT><A name="label-20" id="label-20"><CODE>tables</CODE></A></DT><!-- RDLabel: "tables" -->
+<DD>
+<P>Returns an <CODE>Array</CODE> of all tables and views. </P>
+<P>The default is to return the empty <CODE>Array</CODE> (<CODE>[]</CODE>).</P></DD>
+<DT><A name="label-21" id="label-21"><CODE>columns( <VAR>table</VAR> )</CODE></A></DT><!-- RDLabel: "columns" -->
+<DD>
+<P>Returns more information about the columns of the table <VAR>table</VAR>. 
+Returns an <CODE>Array</CODE> of <CODE>Hash</CODE> objects, like <CODE>Statement#column_info</CODE> does.</P>
+<P>The default is to return an empty <CODE>Array</CODE> (<CODE>[]</CODE>).</P></DD>
+<DT><A name="label-22" id="label-22"><CODE>execute( <VAR>statement</VAR>, *<VAR>bindvars</VAR> )</CODE></A></DT><!-- RDLabel: "execute" -->
+<DD>
+<P>Immediate execution (without preparation) of SQL <VAR>statement</VAR>
+after binding the values in <VAR>bindvars</VAR> to the placeholders in the statement.</P>
+<P>Returns a <CODE>Statement</CODE> object.</P>
+<P>Defaults to the call sequence of <CODE>Database#prepare()</CODE>, <CODE>Statement#bind_params()</CODE> and 
+<CODE>Statement#execute()</CODE>.</P></DD>
+<DT><A name="label-23" id="label-23"><CODE>do( <VAR>statement</VAR>, *<VAR>bindvars</VAR> )</CODE></A></DT><!-- RDLabel: "do" -->
+<DD>
+<P>Execution of SQL <VAR>statement</VAR>, after binding the values given
+in <VAR>bindvars</VAR> to the placeholders in the statement, but without returning a <CODE>Statement</CODE> object.
+So this is used for &#39;INSERT&#39;, &#39;UPDATE&#39;, &#39;DELETE&#39; as well as for DCL, which
+do not return a result set.</P>
+<P>Returns the RPC (Row Processed Count) or <CODE>nil</CODE> if no RPC is available.</P>
+<P>Defaults to <CODE>Database#execute()</CODE> and <CODE>Statement#rows()</CODE> followed by <CODE>Statement#finish()</CODE>. </P></DD>
+<DT><A name="label-24" id="label-24"><CODE>quote( <VAR>value</VAR> )</CODE></A></DT><!-- RDLabel: "quote" -->
+<DD>
+<P>Quotes the given value <VAR>value</VAR> in database-specific fashion and returns the result.</P>
+<P>NOTE: This method is not really useful, because of <CODE>Statement#bind_param</CODE>. </P></DD>
+<DT><A name="label-25" id="label-25"><CODE>[ <VAR>attr</VAR> ]</CODE></A></DT><!-- RDLabel: "[]" -->
+<DD>
+<P>Returns the value of the attribute <VAR>attr</VAR>.</P>
+<P>The default is to return the value of <CODE>@attr[attr]</CODE>.</P></DD>
+<DT><A name="label-26" id="label-26"><CODE>[<VAR>attr</VAR>] = <VAR>value</VAR></CODE></A></DT><!-- RDLabel: "[]=" -->
+<DD>
+<P>Sets the value of the attribute <VAR>attr</VAR> to <VAR>value</VAR>.
+An attribute is, e.g., &quot;AutoCommit&quot;.
+Raises a NotSupportedError exception if the database does not support an attribute.</P>
+<P>The default implementation is to raise a NotSupportedError exception.</P></DD>
+</DL>
+<H2><A name="label-27" id="label-27">Class Statement</A></H2><!-- RDLabel: "Class Statement" -->
+<P>This class must inherit from <CODE>DBI::BaseStatement</CODE>.</P>
+<H3><A name="label-28" id="label-28">Methods that must be provided by <CODE>Statement</CODE></A></H3><!-- RDLabel: "Methods that must be provided by Statement" -->
+<DL>
+<DT><A name="label-29" id="label-29"><CODE>bind_param( <VAR>param</VAR>, <VAR>value</VAR>, <VAR>attribs</VAR> )</CODE></A></DT><!-- RDLabel: "bind_param" -->
+<DD>
+<P>Binds the value <VAR>value</VAR> to a placeholder.
+The placeholder is represented by <VAR>param</VAR>, which is either a
+<CODE>String</CODE> representing the name of the 
+placeholder used in the SQL statement (e.g., Oracle: &quot;SELECT * FROM EMP WHERE ENAME = :ename&quot;) 
+or a <CODE>Fixnum</CODE> that indicates the number of the placeholder.
+Placeholder numbers begin at 1.</P>
+<P>If <VAR>value</VAR> is a <CODE>String</CODE>, then the default SQL type is <CODE>VARCHAR</CODE> or <CODE>CHAR</CODE>.
+If <VAR>value</VAR> is a <CODE>Fixnum</CODE> or <CODE>Bignum</CODE>, the default SQL type is <CODE>INT</CODE>.
+If <VAR>value</VAR> is a <CODE>Float</CODE>, the default SQL type is <CODE>FLOAT</CODE>.</P>
+<P><VAR>attribs</VAR> is not yet used in this version but could be a hash containing more information
+like parameter type, etc.</P></DD>
+<DT><A name="label-30" id="label-30"><CODE>execute</CODE></A></DT><!-- RDLabel: "execute" -->
+<DD>
+Execute the statement.</DD>
+<DT><A name="label-31" id="label-31"><CODE>finish</CODE></A></DT><!-- RDLabel: "finish" -->
+<DD>
+Free all the resources for the statement.
+After calling <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-31">finish</A>, no other operation on this
+statement is valid.</DD>
+<DT><A name="label-32" id="label-32"><CODE>fetch</CODE></A></DT><!-- RDLabel: "fetch" -->
+<DD>
+<P>Fetches the current row.
+Returns an <CODE>Array</CODE> containing all column data or <CODE>nil</CODE> if
+the last column has been read.</P>
+<P>Note: This method should not return a newly created object on each call; 
+instead, you should return one and the same <CODE>Array</CODE> object but with 
+changed data. </P></DD>
+<DT><A name="label-33" id="label-33"><CODE>column_info</CODE></A></DT><!-- RDLabel: "column_info" -->
+<DD>
+Returns an <CODE>Array</CODE> of <CODE>Hash</CODE> objects, one for each column.
+Each <CODE>Hash</CODE> object must have at least one key &#39;name&#39; which 
+value is the name of that column.
+Further possible values are &#39;sql_type&#39; (integer, e.g., DBI::SQL_INT), 
+&#39;type_name&#39; (string), &#39;precision&#39; (= column size), &#39;scale&#39; (= decimal digits),
+&#39;default&#39;, &#39;nullable&#39;, &#39;indexed&#39;, &#39;primary&#39; and &#39;unique&#39;.</DD>
+<DT><A name="label-34" id="label-34"><CODE>rows</CODE></A></DT><!-- RDLabel: "rows" -->
+<DD>
+Returns the RPC (Row Processed Count) of the last executed statement, or
+<CODE>nil</CODE> if no such exists.</DD>
+</DL>
+<H3><A name="label-35" id="label-35">Optional methods that can be specified by <CODE>Statement</CODE></A></H3><!-- RDLabel: "Optional methods that can be specified by Statement" -->
+<DL>
+<DT><A name="label-36" id="label-36"><CODE>bind_params( *<VAR>bindvars</VAR> )</CODE></A></DT><!-- RDLabel: "bind_params" -->
+<DD>
+<P>Binds the values in <VAR>bindvars</VAR> to the placeholders in the statement.</P>
+<P>Defaults to calling <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-29">bind_param</A> for each value, with <VAR>param</VAR> starting
+from 1 increasingly.</P></DD>
+<DT><A name="label-37" id="label-37"><CODE>cancel</CODE></A></DT><!-- RDLabel: "cancel" -->
+<DD>
+<P>Free any result set resources which were made after a call to <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-22">execute</A>.
+After calling this method, calls to any of the <EM>fetch</EM> methods are no longer valid.</P>
+<P>The default is to do nothing.</P></DD>
+<DT><A name="label-38" id="label-38"><CODE>fetch_scroll( <VAR>direction</VAR>, <VAR>offset</VAR> )</CODE></A></DT><!-- RDLabel: "fetch_scroll" -->
+<DD>
+<P><VAR>direction</VAR> is one of the following constants:</P>
+<UL>
+<LI>SQL_FETCH_NEXT</LI>
+<LI>SQL_FETCH_PRIOR</LI>
+<LI>SQL_FETCH_FIRST</LI>
+<LI>SQL_FETCH_LAST</LI>
+<LI>SQL_FETCH_ABSOLUTE</LI>
+<LI>SQL_FETCH_RELATIVE</LI>
+</UL>
+<P><VAR>offset</VAR> is a positive or negative number (only when SQL_FETCH_RELATIVE is used).</P>
+<P>By default, only SQL_FETCH_NEXT, SQL_FETCH_LAST, SQL_FETCH_RELATIVE (if positive) are
+implemented. Otherwise, this method raises a NotSupportedError exception.</P>
+<P>Note: This method should not return a newly created object on each call; 
+instead, you should return one and the same <CODE>Array</CODE> object but with 
+changed data. </P></DD>
+<DT><A name="label-39" id="label-39"><CODE>fetch_many( <VAR>cnt</VAR> )</CODE></A></DT><!-- RDLabel: "fetch_many" -->
+<DD>
+<P>Returns an <CODE>Array</CODE> of the next <VAR>cnt</VAR> rows, where a row is itself an <CODE>Array</CODE>.</P>
+<P>Note: Unlike <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-32">fetch</A>, this method should return a new <CODE>Array</CODE> object.</P>
+<P>If <VAR>cnt</VAR> rows are not available, return the rest (as many as are available).
+Returns <CODE>nil</CODE> if no rows are available.</P>
+<P>Defaults to multiple calls to <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-32">fetch</A>.</P></DD>
+<DT><A name="label-40" id="label-40"><CODE>fetch_all</CODE></A></DT><!-- RDLabel: "fetch_all" -->
+<DD>
+<P>Returns an <CODE>Array</CODE> of all rows that have not yet been fetched, where a row is 
+itself an <CODE>Array</CODE> (see <CODE>Statement#fetch_many</CODE>).</P>
+<P>Note: Unlike <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-32">fetch</A>, this method should return a new <CODE>Array</CODE> object.</P>
+<P>Returns <CODE>nil</CODE> if no rows are available.</P>
+<P>Defaults to multiple calls to <A href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#label-32">fetch</A>.</P></DD>
+<DT><A name="label-41" id="label-41"><CODE>[ <VAR>attr</VAR> ]</CODE></A></DT><!-- RDLabel: "[]" -->
+<DD>
+<P>Returns the value of the attribute <VAR>attr</VAR>.</P>
+<P>The default is to return the value of <CODE>@attr[attr]</CODE>.</P></DD>
+<DT><A name="label-42" id="label-42"><CODE>[<VAR>attr</VAR>] = <VAR>value</VAR></CODE></A></DT><!-- RDLabel: "[]=" -->
+<DD>
+<P>Set the value of the attribute <VAR>attr</VAR> to <VAR>value</VAR>.
+Raise a NotSupportedError exception if the database does not support an attribute.</P>
+<P>The default implementation is to raise a NotSupportedError exception.</P></DD>
+</DL>
+<HR>
+<P class="foottext">
+<A name="foottext-1" id="foottext-1" href="http://ruby-dbi.rubyforge.org/DBD_SPEC.html#footmark-1"><SUP><SMALL>*1</SMALL></SUP></A><SMALL>Data Source Name, e.g., &quot;dbi:Oracle:oracle.neumann&quot;</SMALL><BR>
+</P>
+
+
+</BODY></HTML>
