@@ -19,9 +19,9 @@ namespace IronRuby.DBD
             _connection.Close();
         }
 
-        public IStatement Prepare(string statement)
+        public IDbdStatement Prepare(string statement)
         {
-            throw new System.NotImplementedException();
+            return new DbdStatement(statement, _connection);
         }
 
         public bool Ping()

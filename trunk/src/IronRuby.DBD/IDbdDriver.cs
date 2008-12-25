@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace IronRuby.DBD
 {
-    public interface IStatement
+    public interface IDbdStatement
     {
         /// <summary>
         /// Binds the value value to a placeholder. 
@@ -49,12 +49,12 @@ namespace IronRuby.DBD
         ///     'unique'.
         /// </summary>
         /// <returns></returns>
-        Dictionary<string, object>[] ColumnInfo();
+        IDictionary<string, object>[] ColumnInfo();
         /// <summary>
         /// Returns the RPC (Row Processed Count) of the last executed statement, or nil if no such exists.
         /// </summary>
         /// <returns></returns>
-        int? Rows();
+        int Rows();
     }
 
     public interface IDbdDatabase
@@ -69,7 +69,7 @@ namespace IronRuby.DBD
         /// </summary>
         /// <param name="statement">The statement.</param>
         /// <returns></returns>
-        IStatement Prepare(string statement);
+        IDbdStatement Prepare(string statement);
         /// <summary>
         /// Pings the database to check whether the connection is alive.
         /// </summary>

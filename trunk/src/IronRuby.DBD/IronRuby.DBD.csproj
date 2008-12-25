@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbdDatabase.cs" />
+    <Compile Include="DbdStatement.cs" />
     <Compile Include="DbProviderFactory.cs" />
     <Compile Include="DbdDriver.cs" />
     <Compile Include="IDbdDriver.cs" />
