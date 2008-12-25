@@ -1,5 +1,8 @@
-using System;
+#region Usings
+
 using System.Collections.Generic;
+
+#endregion
 
 namespace IronRuby.DBD
 {
@@ -22,19 +25,23 @@ namespace IronRuby.DBD
         /// <param name="value">The value.</param>
         /// <param name="attribs">The attribs.</param>
         void BindParam(string param, object value, IDictionary<string, object> attribs);
+
         /// <summary>
         /// Executes this statement.
         /// </summary>
         void Execute();
+
         /// <summary>
         /// Free all the resources for the statement. After calling finish, no other operation on this statement is valid.
         /// </summary>
         void Finish();
+
         /// <summary>
         /// Fetches the current row. Returns an Array containing all column data or nil if the last column has been read.
         /// </summary>
         /// <returns></returns>
         object[] Fetch();
+
         /// <summary>
         /// Returns an Array of Hash objects, one for each column. 
         /// Each Hash object must have at least one key 'name' which value is the name of that column. 
@@ -50,6 +57,7 @@ namespace IronRuby.DBD
         /// </summary>
         /// <returns></returns>
         IDictionary<string, object>[] ColumnInfo();
+
         /// <summary>
         /// Returns the RPC (Row Processed Count) of the last executed statement, or nil if no such exists.
         /// </summary>
@@ -64,12 +72,14 @@ namespace IronRuby.DBD
         /// But you must first roll back all outstanding transactions, so all changes not yet committed get lost (are discarded).
         /// </summary>
         void Disconnect();
+
         /// <summary>
         /// Prepares the SQL statement.
         /// </summary>
         /// <param name="statement">The statement.</param>
         /// <returns></returns>
         IDbdStatement Prepare(string statement);
+
         /// <summary>
         /// Pings the database to check whether the connection is alive.
         /// </summary>
@@ -79,9 +89,6 @@ namespace IronRuby.DBD
 
     public interface IDbdDriver
     {
-        IDbdDatabase Connect(string connectionString, string user, string auth, IDictionary<string, string> attr);
+        IDbdDatabase Connect(string connectionString);
     }
-
-
-
 }

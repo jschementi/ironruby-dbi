@@ -1,25 +1,28 @@
+#region Usings
+
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
+
+#endregion
 
 namespace IronRuby.DBD
 {
     public class DbdDriver : IDbdDriver
     {
-        public const string FACTORY_KEY = "factory";
         public const string DEFAULT_PROVIDER = "System.Data.SqlClient";
+        public const string FACTORY_KEY = "factory";
 
         private DbProviderFactory _factory;
 
         public DbdDriver(string factoryName)
         {
-            GetFactory(new Dictionary<string, string>{{FACTORY_KEY, factoryName}});
+            LoadFactory(factoryName);
         }
 
-        public IDbdDatabase Connect(string connectionString, string user, string auth, IDictionary<string, string> attr)
-        {
-            GetFactory(attr);
+        #region IDbdDriver Members
 
+        public IDbdDatabase Connect(string connectionString)
+        {
             var conn = _factory.CreateConnection();
             conn.ConnectionString = connectionString;
 
@@ -29,19 +32,15 @@ namespace IronRuby.DBD
             return new DbdDatabase(trans);
         }
 
-        private void GetFactory(IDictionary<string, string> attr)
+        #endregion
+
+        private void LoadFactory(string factoryName)
         {
             if (_factory != null) return;
 
-            var factoryName = DEFAULT_PROVIDER;
-            if (attr.ContainsKey(FACTORY_KEY))
-            {
-                factoryName = attr[FACTORY_KEY];
-                attr.Remove(FACTORY_KEY);
-            }
             var factory = DbProviderFactories.GetFactory(factoryName);
 
-            if(factory == null)
+            if (factory == null)
                 throw new NotSupportedException();
 
             _factory = factory;

@@ -1,4 +1,8 @@
+#region Usings
+
 using System.Data;
+
+#endregion
 
 namespace IronRuby.DBD
 {
@@ -12,6 +16,8 @@ namespace IronRuby.DBD
             _connection = transaction.Connection;
             _transaction = transaction;
         }
+
+        #region IDbdDatabase Members
 
         public void Disconnect()
         {
@@ -37,6 +43,20 @@ namespace IronRuby.DBD
             {
                 return false;
             }
+        }
+
+        #endregion
+
+        public void Commit()
+        {
+            _transaction.Commit();
+            _connection.BeginTransaction();
+        }
+
+        public void RollBack()
+        {
+            _transaction.Rollback();
+            _connection.BeginTransaction();
         }
     }
 }

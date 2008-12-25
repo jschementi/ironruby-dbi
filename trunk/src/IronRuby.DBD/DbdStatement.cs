@@ -1,15 +1,39 @@
-using System;
+#region Usings
+
 using System.Collections.Generic;
 using System.Data;
+
+#endregion
 
 namespace IronRuby.DBD
 {
     public class DbdStatement : IDbdStatement
     {
-        private readonly IDbConnection _connection;
-        private readonly IDbCommand _command;
-        private IDataReader _reader;
-        private DataTable _schema;
+        public static readonly Dictionary<string, string> CLR_TYPES = new Dictionary<string, string>
+                                                                          {
+                                                                              {"TINYINT", "byte"},
+                                                                              {"SMALLINT", "short"},
+                                                                              {"BIGINT", "long"},
+                                                                              {"INT", "int"},
+                                                                              {"FLOAT", "double"},
+                                                                              {"REAL", "float"},
+                                                                              {"SMALLMONEY", "decimal"},
+                                                                              {"MONEY", "decimal"},
+                                                                              {"NUMERIC", "decimal"},
+                                                                              {"DECIMAL", "decimal"},
+                                                                              {"BIT", "bool"},
+                                                                              {"UNIQUEIDENTIFIER", "Guid"},
+                                                                              {"VARCHAR", "string"},
+                                                                              {"NVARCHAR", "string"},
+                                                                              {"TEXT", "string"},
+                                                                              {"NTEXT", "string"},
+                                                                              {"CHAR", "char"},
+                                                                              {"NCHAR", "char"},
+                                                                              {"VARBINARY", "byte[]"},
+                                                                              {"IMAGE", "byte[]"},
+                                                                              {"DATETIME", "DateTime"}
+                                                                          };
+
         public static readonly Dictionary<string, string> SQL_TYPE_NAMES = new Dictionary<string, string>
                                                                                {
                                                                                    {"BIT", "BIT"},
@@ -35,33 +59,13 @@ namespace IronRuby.DBD
                                                                                    {"CLOB", "CLOB"},
                                                                                    {"OTHER", string.Empty},
                                                                                    {"BOOLEAN", "BOOLEAN"},
-
                                                                                };
 
-        public static readonly Dictionary<string, string>  CLR_TYPES = new Dictionary<string, string>
-                              {
-                                  {"TINYINT", "byte"},
-                                  {"SMALLINT", "short"},
-                                  {"BIGINT", "long"},
-                                  {"INT", "int"},
-                                  {"FLOAT", "double"},
-                                  {"REAL", "float"},
-                                  {"SMALLMONEY", "decimal"},
-                                  {"MONEY", "decimal"},
-                                  {"NUMERIC", "decimal"},
-                                  {"DECIMAL", "decimal"},
-                                  {"BIT", "bool"},
-                                  {"UNIQUEIDENTIFIER", "Guid"},
-                                  {"VARCHAR", "string"},
-                                  {"NVARCHAR", "string"},
-                                  {"TEXT", "string"},
-                                  {"NTEXT", "string"},
-                                  {"CHAR", "char"},
-                                  {"NCHAR", "char"},
-                                  {"VARBINARY", "byte[]"},
-                                  {"IMAGE", "byte[]"},
-                                  {"DATETIME", "DateTime"}
-                              };
+        private readonly IDbCommand _command;
+        private readonly IDbConnection _connection;
+        private IDataReader _reader;
+        private object[] _results;
+        private DataTable _schema;
 
         public DbdStatement(string statement, IDbConnection connection)
         {
@@ -69,6 +73,8 @@ namespace IronRuby.DBD
             _command = _connection.CreateCommand();
             _command.CommandText = statement;
         }
+
+        #region IDbdStatement Members
 
         public void BindParam(string param, object value, IDictionary<string, object> attribs)
         {
@@ -95,9 +101,7 @@ namespace IronRuby.DBD
         /// <returns></returns>
         public object[] Fetch()
         {
-            if(_reader.Read())
-                return new object[0];
-            return null;
+            return _reader.Read() ? ReadRow() : null;
         }
 
         /// <summary>
@@ -122,7 +126,6 @@ namespace IronRuby.DBD
 
             foreach (DataRow row in _schema.Rows)
             {
-                
                 var colInfo = new Dictionary<string, object>();
                 var colName = row["ColumnName"].ToString();
                 colInfo["name"] = colName;
@@ -136,10 +139,36 @@ namespace IronRuby.DBD
                 colInfo["primary"] = IsPrimaryKey(colName);
                 colInfo["unique"] = row["IsUnique"];
                 result.Add(colInfo);
-                
             }
 
             return result.ToArray();
+        }
+
+        public int Rows()
+        {
+            return _reader.RecordsAffected;
+        }
+
+        #endregion
+
+        private object[] ReadRow()
+        {
+            return ReadRow(_reader);
+        }
+
+        private object[] ReadRow(IDataReader reader)
+        {
+            var info = ColumnInfo();
+
+            if (_results == null || _results.Length != info.Length)
+                _results = new object[info.Length];
+
+            for (var i = 0; i < info.Length; i++)
+            {
+                _results[i] = _reader[i];
+            }
+
+            return _results;
         }
 
         private void GetSchema()
@@ -167,11 +196,6 @@ namespace IronRuby.DBD
         protected virtual string ToClrType(string dataType)
         {
             return CLR_TYPES[dataType.ToUpperInvariant()];
-        }
-
-        public int Rows()
-        {
-            return _reader.RecordsAffected;
         }
     }
 }
