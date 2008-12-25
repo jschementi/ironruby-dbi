@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E3AA3078-EE4E-4600-8D5E-5CE4DAF03560}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{CB53D9B9-3F52-4D8E-85C6-CDF80D5F31DF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ironruby.Interop</RootNamespace>
-    <AssemblyName>Ironruby.Interop</AssemblyName>
+    <RootNamespace>IronRuby.DBD.Interop</RootNamespace>
+    <AssemblyName>IronRuby.DBD.Interop</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,7 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataSetHelper.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
