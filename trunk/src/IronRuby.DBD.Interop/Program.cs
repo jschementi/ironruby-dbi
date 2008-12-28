@@ -16,10 +16,16 @@ namespace IronRuby.DBD.Interop
             {
                 Console.WriteLine(o.ColumnName);
             }
-//            foreach(DataRow factory in dt.Rows)
-//            {
+
+            Console.WriteLine("=================");
+            Console.WriteLine("    Rows      ");
+            Console.WriteLine("=================");
+
+            foreach(DataRow factory in dt.Rows)
+            {
+                Console.WriteLine(factory["InvariantName"]);
 //                Console.WriteLine(DbProviderFactories.GetFactory(factory["InvariantName"].ToString()).GetType().Name);
-//            }
+            }
 //            var fact = DbProviderFactories.GetFactory("System.Data.SqlClient");
 //            Console.WriteLine("Provider name: {0}", fact.GetType().Name);
         }

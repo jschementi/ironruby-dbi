@@ -9,13 +9,13 @@ module DBI
       VERSION          = "0.1"
       USED_DBD_VERSION = "0.1"
       FACTORIES        = {
-                            :odbc => "OdbcFactory",
-                            :oledb => "OleDbFactory",
-                            :oracle => "OracleClientFactory",
-                            :mssql => "SqlClientFactory",
-                            :sqlce => "SqlCeProviderFactory",
-                            :mysql => "MySqlClientFactory",
-                            :sqlite => "SQLiteFactory"
+                            :odbc => "System.Data.Odbc",
+                            :oledb => "System.Data.OleDb",
+                            :oracle => "System.Data.OracleClient",
+                            :mssql => "System.Data.SqlClient",
+                            :sqlce => "System.Data.SqlServerCe.3.5",
+                            :mysql => "MySql.Data.MySqlClient",
+                            :sqlite => "System.Data.SQLite"
                          }
       
       class Driver < DBI::BaseDriver
