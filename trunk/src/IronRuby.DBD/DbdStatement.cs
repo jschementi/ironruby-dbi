@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 
 #endregion
 
@@ -40,6 +41,7 @@ namespace IronRuby.DBD
                                                                                    {"TINYINT", "TINYINT"},
                                                                                    {"SMALLINT", "SMALLINT"},
                                                                                    {"INTEGER", "INTEGER"},
+                                                                                   {"INT", "INTEGER"},
                                                                                    {"BIGINT", "BIGINT"},
                                                                                    {"FLOAT", "FLOAT"},
                                                                                    {"REAL", "REAL"},
@@ -47,9 +49,14 @@ namespace IronRuby.DBD
                                                                                    {"NUMERIC", "NUMERIC"},
                                                                                    {"DECIMAL", "DECIMAL"},
                                                                                    {"CHAR", "CHAR"},
+                                                                                   {"NCHAR", "CHAR"},
                                                                                    {"VARCHAR", "VARCHAR"},
+                                                                                   {"NVARCHAR", "VARCHAR"},
                                                                                    {"LONGVARCHAR", "LONG VARCHAR"},
+                                                                                   {"TEXT", "LONG VARCHAR"},
+                                                                                   {"NTEXT", "LONG VARCHAR"},
                                                                                    {"DATE", "DATE"},
+                                                                                   {"DATETIME", "DATETIME"},
                                                                                    {"TIME", "TIME"},
                                                                                    {"TIMESTAMP", "TIMESTAMP"},
                                                                                    {"BINARY", "BINARY"},
@@ -59,19 +66,23 @@ namespace IronRuby.DBD
                                                                                    {"CLOB", "CLOB"},
                                                                                    {"OTHER", string.Empty},
                                                                                    {"BOOLEAN", "BOOLEAN"},
+                                                                                   {"UNIQUEIDENTIFIER", "VARCHAR"}
                                                                                };
 
         private readonly IDbCommand _command;
         private readonly IDbConnection _connection;
-        private IDataReader _reader;
         private object[] _results;
         private DataTable _schema;
+        private int _currentIndex;
+        private List<object[]> _rows;
+        private int _recordsAffected;
 
-        public DbdStatement(string statement, IDbConnection connection)
+        public DbdStatement(string statement, IDbConnection connection, IDbTransaction transaction)
         {
             _connection = connection;
             _command = _connection.CreateCommand();
             _command.CommandText = statement;
+            _command.Transaction = transaction;
         }
 
         #region IDbdStatement Members
@@ -86,11 +97,23 @@ namespace IronRuby.DBD
 
         public void Execute()
         {
-            _reader = _command.ExecuteReader();
+            _currentIndex = 0;
+            _rows = new List<object[]>();
+            if(ConnectionState.Open != _command.Connection.State) _command.Connection.Open();
+            using(var reader = _command.ExecuteReader())
+            {
+                _schema = reader.GetSchemaTable();
+                _recordsAffected = reader.RecordsAffected;
+                while (reader.Read())
+                {
+                    _rows.Add(ReadRow(reader));
+                }
+            }
         }
 
         public void Finish()
         {
+//            _reader.Close();
             _command.Dispose();
             _connection.Close();
         }
@@ -101,7 +124,7 @@ namespace IronRuby.DBD
         /// <returns></returns>
         public object[] Fetch()
         {
-            return _reader.Read() ? ReadRow() : null;
+            return _currentIndex < _results.Length - 1 ? _rows[_currentIndex++] : null;
         }
 
         /// <summary>
@@ -121,16 +144,18 @@ namespace IronRuby.DBD
         /// <returns></returns>
         public IDictionary<string, object>[] ColumnInfo()
         {
-            GetSchema();
+//            GetSchema();
             var result = new List<Dictionary<string, object>>(_schema.Columns.Count);
 
             foreach (DataRow row in _schema.Rows)
             {
                 var colInfo = new Dictionary<string, object>();
                 var colName = row["ColumnName"].ToString();
+                var dataTypeName = row["DataTypeName"].ToString();
                 colInfo["name"] = colName;
-                colInfo["sql_type"] = SQL_TYPE_NAMES[row["DataTypeName"].ToString().ToUpperInvariant()];
-                colInfo["type_name"] = CLR_TYPES[row["DataTypeName"].ToString().ToLowerInvariant()];
+                Debug.WriteLine(string.Format("Data type: {0}", dataTypeName));
+                colInfo["sql_type"] = SQL_TYPE_NAMES[dataTypeName.ToUpperInvariant()];
+                colInfo["type_name"] = CLR_TYPES[dataTypeName.ToUpperInvariant()];
                 colInfo["precision"] = row["NumericPrecision"];
                 colInfo["scale"] = row["NumericScale"];
 //                colInfo["default"] = row["DefaultValue"];
@@ -146,17 +171,17 @@ namespace IronRuby.DBD
 
         public int Rows()
         {
-            return _reader.RecordsAffected;
+            return _recordsAffected;
         }
 
         #endregion
 
-        private object[] ReadRow()
-        {
-            return ReadRow(_reader);
-        }
+//        private object[] ReadRow()
+//        {
+//            return ReadRow(_reader);
+//        }
 
-        private object[] ReadRow(IDataReader reader)
+        private object[] ReadRow(IDataRecord reader)
         {
             var info = ColumnInfo();
 
@@ -165,17 +190,17 @@ namespace IronRuby.DBD
 
             for (var i = 0; i < info.Length; i++)
             {
-                _results[i] = _reader[i];
+                _results[i] = reader[i];
             }
 
             return _results;
         }
 
-        private void GetSchema()
-        {
-            if (_schema == null)
-                _schema = _reader.GetSchemaTable();
-        }
+//        private void GetSchema()
+//        {
+//            if (_schema == null)
+//                _schema = _reader.GetSchemaTable();
+//        }
 
         private bool IsPrimaryKey(string columnName)
         {

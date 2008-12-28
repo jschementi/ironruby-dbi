@@ -1,6 +1,10 @@
+require 'IronRuby.DBD, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'
+
 module DBI
   module DBD
-    module ADO
+    module ADONET
+    
+      include IronRuby::DBD
       
       VERSION          = "0.1"
       USED_DBD_VERSION = "0.1"
@@ -24,7 +28,7 @@ module DBI
           provider, connection = parse_connection_string(driver_url)
           dbd_driver = DbdDriver.new(FACTORIES[provider.to_sym])
           
-          return Database.new(dbd_driver.connect(connection))
+          return Database.new(dbd_driver.connect(connection), attr)
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
@@ -43,8 +47,8 @@ module DBI
       
       class Database < DBI::BaseDatabase
         
-        def initialize(dbd_db)
-          super()
+        def initialize(dbd_db, attr)
+          super
           @dbd_db = dbd_db
         end
         
@@ -56,7 +60,7 @@ module DBI
         
         def prepare(statement)
           # TODO: create Command instead?
-          Statement.new(@dbd_db.prepare)
+          Statement.new(@dbd_db.prepare(statement.to_clr_string))
         end
         
         def ping
@@ -109,7 +113,11 @@ module DBI
         end 
         
         def column_info
-          @dbd_statement.column_info
+          @dbd_statement.column_info.collect do |dictionary| 
+            result = {}
+            dictionary.each { |pair| result[pair.key.to_s] = pair.value } 
+            result
+          end
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end 

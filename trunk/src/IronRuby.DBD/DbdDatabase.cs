@@ -27,7 +27,7 @@ namespace IronRuby.DBD
 
         public IDbdStatement Prepare(string statement)
         {
-            return new DbdStatement(statement, _connection);
+            return new DbdStatement(statement, _connection, _transaction);
         }
 
         public bool Ping()
