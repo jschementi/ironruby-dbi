@@ -10,7 +10,6 @@ namespace IronRuby.DBD
     public class DbdDriver : IDbdDriver
     {
         public const string DEFAULT_PROVIDER = "System.Data.SqlClient";
-        public const string FACTORY_KEY = "factory";
 
         private DbProviderFactory _factory;
 

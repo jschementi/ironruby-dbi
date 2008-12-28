@@ -2,13 +2,14 @@
 
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 
 #endregion
 
 namespace IronRuby.DBD
 {
-    public class DbdStatement : IDbdStatement
+    public class DbdStatement //: IDbdStatement
     {
         public static readonly Dictionary<string, string> CLR_TYPES = new Dictionary<string, string>
                                                                           {
@@ -71,7 +72,6 @@ namespace IronRuby.DBD
 
         private readonly IDbCommand _command;
         private readonly IDbConnection _connection;
-        private object[] _results;
         private DataTable _schema;
         private int _currentIndex;
         private List<object[]> _rows;
@@ -102,6 +102,7 @@ namespace IronRuby.DBD
             if(ConnectionState.Open != _command.Connection.State) _command.Connection.Open();
             using(var reader = _command.ExecuteReader())
             {
+                
                 _schema = reader.GetSchemaTable();
                 _recordsAffected = reader.RecordsAffected;
                 while (reader.Read())
@@ -124,7 +125,7 @@ namespace IronRuby.DBD
         /// <returns></returns>
         public object[] Fetch()
         {
-            return _currentIndex < _results.Length - 1 ? _rows[_currentIndex++] : null;
+            return _currentIndex < _rows.Count - 1 ? _rows[_currentIndex++] : null;
         }
 
         /// <summary>
@@ -184,16 +185,15 @@ namespace IronRuby.DBD
         private object[] ReadRow(IDataRecord reader)
         {
             var info = ColumnInfo();
-
-            if (_results == null || _results.Length != info.Length)
-                _results = new object[info.Length];
+            var results = new object[info.Length];
+            //if (_results == null || _results.Length != info.Length)
+            //    _results = new object[info.Length];
 
             for (var i = 0; i < info.Length; i++)
             {
-                _results[i] = reader[i];
+                results[i] = reader[i];
             }
-
-            return _results;
+            return results;
         }
 
 //        private void GetSchema()
@@ -213,14 +213,29 @@ namespace IronRuby.DBD
             return false;
         }
 
-        protected virtual string ToDbiType(string dataType)
+        public static string ToDbiType(string dataType)
         {
             return SQL_TYPE_NAMES[dataType.ToUpperInvariant()];
         }
 
-        protected virtual string ToClrType(string dataType)
+        public static string ToClrType(string dataType)
         {
             return CLR_TYPES[dataType.ToUpperInvariant()];
+        }
+
+        public static object GetRowValue(DataRow row, string key)
+        {
+            return row[key];
+        }
+
+        public static object GetReaderValue(IDataRecord record, int index)
+        {
+            return record[index];
+        }
+
+        public static object GetRecordValue(IDataRecord record, string name)
+        {
+            return record[name];
         }
     }
 }
