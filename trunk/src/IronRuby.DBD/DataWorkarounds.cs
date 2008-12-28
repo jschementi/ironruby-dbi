@@ -7,9 +7,9 @@ using System.Diagnostics;
 
 #endregion
 
-namespace IronRuby.DBD
+namespace Workarounds
 {
-    public class DbdStatement 
+    public class DataWorkarounds 
     {
         public static object GetRowValue(DataRow row, string key)
         {

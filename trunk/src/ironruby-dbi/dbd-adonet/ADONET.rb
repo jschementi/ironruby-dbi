@@ -1,7 +1,7 @@
 require 'mscorlib'
 require 'System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 require 'System.Data, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-require 'IronRuby.DBD, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'
+require File.dirname(__FILE__) + '/Workarounds.dll'
 
 module DBI
   module DBD
@@ -22,7 +22,6 @@ module DBI
       class Driver < DBI::BaseDriver
         
         include System::Data::Common
-        include IronRuby::DBD
         
         def initialize
           super(USED_DBD_VERSION)
@@ -113,10 +112,19 @@ module DBI
           @handle
         end
         
+        def []=(attr, value)
+          if attr == 'AutoCommit' then
+            # TODO: commit current transaction?
+            @attr[attr] = value
+          else
+            super
+          end
+        end
+        
       end # class Database
       
       class Statement < DBI::BaseStatement
-        include IronRuby::DBD
+        include Workarounds
         
         CLR_TYPES = {
           :TINYINT => "byte",
@@ -169,6 +177,7 @@ module DBI
           :VARBINARY => "VARBINARY",
           :LONGVARBINARY => "LONG VARBINARY",
           :IMAGE => "BLOB",
+          :BLOB => "BLOB",
           :CLOB => "CLOB",
           :OTHER => "",
           :BOOLEAN => "BOOLEAN",
@@ -176,11 +185,13 @@ module DBI
         }
         
         def initialize(statement, db)
+          @statement = statement
           @connection = db.current_connection;
           @command = @connection.create_command
           @command.command_text = statement
           @command.transaction = db.current_transaction
           @current_index = 0
+          @db = db
         end 
         
         def bind_param(name, value, attribs)
@@ -195,6 +206,13 @@ module DBI
           @rows = []
           @schema = nil
           @reader = @command.execute_reader
+          
+          finish if not SQL.query?(@statement)
+          # TODO: SELECT and AutoCommit finishes the result-set
+          #       what to do?
+          if @db['AutoCommit'] == true and not SQL.query?(@statement) then
+            @db.commit
+          end
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end 
@@ -207,6 +225,7 @@ module DBI
         
         def finish
           @reader.close
+          
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end 
@@ -218,18 +237,18 @@ module DBI
         def column_info
           
           infos = schema.rows.collect do |row|
-            name = DbdStatement.get_row_value row, "ColumnName"
-            dtn = DbdStatement.get_row_value(row, "DataTypeName").to_s
+            name = DataWorkarounds.get_row_value row, "ColumnName"
+            dtn = DataWorkarounds.get_row_value(row, "DataTypeName").to_s
             {
               :name => name.to_s,
               :sql_type => SQL_TYPE_NAMES[dtn.upcase.to_sym],
               :type_name => CLR_TYPES[dtn.upcase.to_sym],
-              :precision => DbdStatement.get_row_value(row, "NumericPrecision"),
-              :default => DbdStatement.get_default_value(row, name),
-              :scale => DbdStatement.get_row_value(row, "NumericScale"),
-              :nullable => DbdStatement.get_row_value(row, "AllowDBNull"),
+              :precision => DataWorkarounds.get_row_value(row, "NumericPrecision"),
+              :default => DataWorkarounds.get_default_value(row, name),
+              :scale => DataWorkarounds.get_row_value(row, "NumericScale"),
+              :nullable => DataWorkarounds.get_row_value(row, "AllowDBNull"),
               :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
-              :unique => DbdStatement.get_row_value(row, "IsUnique")
+              :unique => DataWorkarounds.get_row_value(row, "IsUnique")
             }            
           end
           infos

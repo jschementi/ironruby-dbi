@@ -44,6 +44,13 @@
   <ItemGroup>
     <Ruby Include="ADONET.rb" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Debug" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Workarounds.dll" />
+    <Content Include="Workarounds.pdb" />
+  </ItemGroup>
   <Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" Inputs="@(Ruby)" Outputs="$(MSBuildProjectDirectory)\SyntaxCheck\%(Identity)">
   </Target>
   <Target Name="BeforeBuild" Condition="'$(PreBuildEvent)'!='' ">

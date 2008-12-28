@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronRuby.DBD", "IronRuby.DBD\IronRuby.DBD.csproj", "{401292E0-23A1-4E17-9863-5399BF06836D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workarounds", "IronRuby.DBD\Workarounds.csproj", "{401292E0-23A1-4E17-9863-5399BF06836D}"
 EndProject
 Project("{325B8569-0C7C-4A6A-8AF8-89C3B6BC9E74}") = "dbd-adonet", "ironruby-dbi\dbd-adonet\dbd-adonet.stproj", "{11FD3952-549F-4936-ACC1-EF03BE035313}"
 EndProject
