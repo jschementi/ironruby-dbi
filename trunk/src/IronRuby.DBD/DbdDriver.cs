@@ -14,9 +14,9 @@ namespace IronRuby.DBD
 
         private DbProviderFactory _factory;
 
-        public DbdDriver(string factoryName)
+        public DbdDriver(string providerName)
         {
-            LoadFactory(factoryName);
+            LoadFactory(providerName);
         }
 
         #region IDbdDriver Members
@@ -34,11 +34,11 @@ namespace IronRuby.DBD
 
         #endregion
 
-        private void LoadFactory(string factoryName)
+        private void LoadFactory(string providerName)
         {
             if (_factory != null) return;
 
-            var factory = DbProviderFactories.GetFactory(factoryName);
+            var factory = DbProviderFactories.GetFactory(string.IsNullOrEmpty(providerName) ? DEFAULT_PROVIDER : providerName);
 
             if (factory == null)
                 throw new NotSupportedException();

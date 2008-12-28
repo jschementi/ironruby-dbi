@@ -8,7 +8,7 @@ module DBI
       
       VERSION          = "0.1"
       USED_DBD_VERSION = "0.1"
-      FACTORIES        = {
+      PROVIDERS        = {
                             :odbc => "System.Data.Odbc",
                             :oledb => "System.Data.OleDb",
                             :oracle => "System.Data.OracleClient",
@@ -26,7 +26,7 @@ module DBI
         
         def connect(driver_url, user, auth, attr)
           provider, connection = parse_connection_string(driver_url)
-          dbd_driver = DbdDriver.new(FACTORIES[provider.to_sym])
+          dbd_driver = DbdDriver.new(PROVIDERS[provider.to_sym])
           
           return Database.new(dbd_driver.connect(connection), attr)
         rescue RuntimeError => err
