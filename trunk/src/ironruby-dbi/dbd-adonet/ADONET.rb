@@ -7,9 +7,6 @@ module DBI
   module DBD
     module ADONET
       
-      
-      
-      
       VERSION          = "0.1"
       USED_DBD_VERSION = "0.1"
       PROVIDERS        = {
@@ -33,7 +30,7 @@ module DBI
         
         def connect(driver_url, user, auth, attr)
           provider, connection = parse_connection_string(driver_url)
-          load_factory PROVIDERS[provider.to_sym]
+          load_factory PROVIDERS[provider.downcase.to_sym]
           conn = @factory.create_connection
           conn.connection_string = connection
           conn.open
@@ -78,7 +75,6 @@ module DBI
         end
         
         def prepare(statement)
-          #clr_stmt = DbdStatement.new(statement, @handle);
           Statement.new(statement, self)
         end
         
@@ -121,6 +117,63 @@ module DBI
       
       class Statement < DBI::BaseStatement
         include IronRuby::DBD
+        
+        CLR_TYPES = {
+          :TINYINT => "byte",
+          :SMALLINT => "short",
+          :BIGINT => "long",
+          :INT => "int",
+          :FLOAT => "double",
+          :REAL => "float",
+          :SMALLMONEY => "decimal",
+          :MONEY => "decimal",
+          :NUMERIC => "decimal",
+          :DECIMAL => "decimal",
+          :BIT => "bool",
+          :UNIQUEIDENTIFIER => "Guid",
+          :VARCHAR => "string",
+          :NVARCHAR => "string",
+          :TEXT => "string",
+          :NTEXT => "string",
+          :CHAR => "char",
+          :NCHAR => "char",
+          :VARBINARY => "byte[]",
+          :IMAGE => "byte[]",
+          :DATETIME => "DateTime"
+        }
+        
+        SQL_TYPE_NAMES = {
+          :BIT => "BIT",
+          :TINYINT => "TINYINT",
+          :SMALLINT => "SMALLINT",
+          :INTEGER => "INTEGER",
+          :INT => "INTEGER",
+          :BIGINT => "BIGINT",
+          :FLOAT => "FLOAT",
+          :REAL => "REAL",
+          :DOUBLE => "DOUBLE",
+          :NUMERIC => "NUMERIC",
+          :DECIMAL => "DECIMAL",
+          :CHAR => "CHAR",
+          :NCHAR => "CHAR",
+          :VARCHAR => "VARCHAR",
+          :NVARCHAR => "VARCHAR",
+          :LONGVARCHAR => "LONG VARCHAR",
+          :TEXT => "LONG VARCHAR",
+          :NTEXT => "LONG VARCHAR",
+          :DATE => "DATE",
+          :DATETIME => "DATETIME",
+          :TIME => "TIME",
+          :TIMESTAMP => "TIMESTAMP",
+          :BINARY => "BINARY",
+          :VARBINARY => "VARBINARY",
+          :LONGVARBINARY => "LONG VARBINARY",
+          :IMAGE => "BLOB",
+          :CLOB => "CLOB",
+          :OTHER => "",
+          :BOOLEAN => "BOOLEAN",
+          :UNIQUEIDENTIFIER => "VARCHAR"
+        }
         
         def initialize(statement, db)
           @connection = db.current_connection;
@@ -166,18 +219,18 @@ module DBI
           
           infos = schema.rows.collect do |row|
             name = DbdStatement.get_row_value row, "ColumnName"
-            dtn = DbdStatement.get_row_value row, "DataTypeName"
-            info = {
-              :name => name,
-              :sql_type => DbdStatement.to_dbi_type(dtn),
-              :type_name => DbdStatement.to_clr_type(dtn),
+            dtn = DbdStatement.get_row_value(row, "DataTypeName").to_s
+            {
+              :name => name.to_s,
+              :sql_type => SQL_TYPE_NAMES[dtn.upcase.to_sym],
+              :type_name => CLR_TYPES[dtn.upcase.to_sym],
               :precision => DbdStatement.get_row_value(row, "NumericPrecision"),
+              :default => DbdStatement.get_default_value(row, name),
               :scale => DbdStatement.get_row_value(row, "NumericScale"),
               :nullable => DbdStatement.get_row_value(row, "AllowDBNull"),
               :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
               :unique => DbdStatement.get_row_value(row, "IsUnique")
-            }
-            info
+            }            
           end
           infos
         rescue RuntimeError => err
@@ -191,9 +244,18 @@ module DBI
         
         private
         
-        def read_row(record)
-          (0...schema.columns.count).collect { |i| DbdStatement.get_reader_value(record, i) }
-        end
+          def read_row(record)
+            (0...schema.columns.count).collect do |i| 
+              res = record.get_value(i) 
+              if res.is_a?(System::Guid)
+                res.to_string.to_s
+              elsif res.is_a?(System::DBNull)
+                nil
+              else
+                res
+              end
+            end
+          end
         
       end
       
