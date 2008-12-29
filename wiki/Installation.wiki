@@ -1,0 +1,20 @@
+#summary Installing ironruby-dbi.
+#labels Featured,Phase-Deploy
+
+= Introduction =
+
+Getting ironruby-dbi to work with IronRuby
+
+
+= Details =
+To install ironruby-dbi it should should suffice to extract the files you find in the ironruby-dbi archive to the libs folder of your ironruby installation.
+
+For example I track the git repository for updates to ironruby and the git repository is cloned into *C:\tools\ironruby* 
+
+To install ironruby-dbi these are the steps you need to take.
+
+  1. Extract the archive
+  2. Copy the files to ruby/site_ruby/1.8 
+(on my machine the full path is: _C:\tools\ironruby\merlin\external\languages\ruby\redist-libs\ruby\site_ruby\1.8_)
+
+Start accessing databases :)
