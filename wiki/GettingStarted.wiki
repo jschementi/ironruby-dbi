@@ -12,11 +12,11 @@ There is one difference in the way you connect to a database.
 
 In ruby-dbi the connection string to a mssql database would be something like:
 
-`DBI.connect('DBI:ADO:datasource=(local);initial catalog=MyDatabase;user id=user;password=password')`
+`DBI.connect('DBI:ADO:data source=(local);initial catalog=MyDatabase;user id=user;password=password')`
 
 To connect to the same database but using ADO.NET you would write the following connection string.
 
-`DBI.connect('DBI:ADONET:MSSQL:datasource=(local);initial catalog=MyDatabase;user id=user;password=password')`
+`DBI.connect('DBI:ADONET:MSSQL:data source=(local);initial catalog=MyDatabase;user id=user;password=password')`
 
 There has been an extra colon defined to select the provider that ADO.NET should use to access the database. So instead of just specifying the driver *DBI:_ADO_:* which is ADO in this example. You now have to tell DBI that it needs to use the ADO.NET driver with the MSSQL provider *DBI:_ADONET_:_MSSQL_*.
 
