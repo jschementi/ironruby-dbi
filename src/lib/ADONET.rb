@@ -1,7 +1,7 @@
 require 'mscorlib'
 require 'System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 require 'System.Data, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-require File.dirname(__FILE__) + '/Workarounds.dll'
+#require File.dirname(__FILE__) + '/Workarounds.dll'
 
 module DBI
   module DBD
