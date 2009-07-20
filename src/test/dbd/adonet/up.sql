@@ -16,7 +16,7 @@ CREATE TABLE blob_test (name VARCHAR(30), data Image);
 create view view_names as select * from names;
 ---
 
-create table boolean_test (num integer, mybool boolean);
+create table boolean_test (num integer, mybool bit);
 ---
 create table time_test (mytime time);
 ---

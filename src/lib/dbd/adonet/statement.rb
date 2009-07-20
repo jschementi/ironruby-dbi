@@ -66,7 +66,7 @@ module DBI
           @connection = db.current_connection;
           @command = @connection.create_command
           @statement = @command.command_text = statement
-          @command.transaction = db.current_transaction
+          
           @current_index = 0
           @db = db
         end
@@ -84,12 +84,8 @@ module DBI
           @schema = nil
           @reader = @command.execute_reader
 
-          finish if not SQL.query?(@statement)
-          # TODO: SELECT and AutoCommit finishes the result-set
-          #       what to do?
-          if @db['AutoCommit'] and not SQL.query?(@statement) then
-            @db.commit
-          end
+          finish unless SQL.query?(@statement)
+          
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
@@ -101,7 +97,7 @@ module DBI
         end
 
         def finish
-          @reader.close
+          @reader.close if @reader
 
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)

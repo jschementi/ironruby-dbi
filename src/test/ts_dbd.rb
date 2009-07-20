@@ -60,7 +60,7 @@ module DBDConfig
                 dbh.commit rescue nil
                 dbh["AutoCommit"] = true rescue nil
                 dbh.do(stmt)
-                dbh.commit unless dbtype == 'sqlite3'
+                #dbh.commit unless dbtype == 'sqlite3'
             rescue Exception => e
                 puts "Error injecting '#{stmt}' for db #{dbtype}"
                 puts "Error: #{e.message}"

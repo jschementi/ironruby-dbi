@@ -5,31 +5,22 @@ module DBI
       class Database < DBI::BaseDatabase
 
         def initialize(dbd_db, attr)
-          puts "=== initialize"
           super
-          @trans = dbd_db.begin_transaction
           @attr['AutoCommit'] = true
         end
 
         def disconnect
-          puts "=== disconnect"
           self.rollback unless @attr['AutoCommit']
           @handle.close
         rescue MyError => err
           error(err)
-        #  @trans.rollback
-        #  @handle.close
-        #rescue RuntimeError => err
-        #  raise DBI::DatabaseError.new(err.message)
         end
 
         def prepare(statement)
-          puts "=== prepare ['#{statement}']"
           Statement.new(statement, self)
         end
 
         def ping
-          puts "=== ping"
           cmd = @handle.create_command
           cmd.command_text = "Select 1"
           begin
@@ -43,42 +34,48 @@ module DBI
         end
 
         def tables
-          @trans.rollback unless @trans.nil?
-          tables = @handle.get_schema("Tables").rows.collect { |row| row["TABLE_NAME"].to_s }
-          @trans = @handle.begin_transaction
-          tables
+          @handle.get_schema("Tables").rows.collect { |row| row["TABLE_NAME"].to_s }
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
+        def columns(table)
+          sql = "select object_name(c.object_id) as table_name, c.column_id, c.name, type_name(system_type_id) as sql_type, max_length, is_nullable, precision, scale,
+              convert(bit,(Select COUNT(*) from sys.indexes as i
+                inner join sys.index_columns as ic
+                  on ic.index_id = i.index_id and ic.object_id = i.object_id
+                inner join sys.columns as c2 on ic.column_id = c2.column_id and i.object_id = c2.object_id
+              WHERE i.is_primary_key = 0
+                and i.is_unique_constraint = 0 and ic.column_id = c.column_id and i.object_id=c.object_id)) as is_index,
+              is_identity,
+              is_computed,
+              convert(bit,(Select Count(*) from sys.indexes as i inner join sys.index_columns as ic
+                  on ic.index_id = i.index_id and ic.object_id = i.object_id
+                inner join sys.columns as c2 on ic.column_id = c2.column_id and i.object_id = c2.object_id
+              WHERE (i.is_unique_constraint = 1) and ic.column_id = c.column_id and i.object_id=c.object_id)) as is_unique
+              from sys.columns as c
+              WHERE object_name(c.object_id)  in (select table_name     FROM information_schema.Tables WHERE table_type = 'Base Table')
+              order by table_name"
+          []
+        end
+
         def commit
-          puts "=== commit"
-          @trans.commit
-          @trans = @handle.begin_transaction
+          self.do("COMMIT")
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def rollback
-          puts "=== rollback"
-          @trans.rollback
-          @trans = @handle.begin_transaction
+          self.do("ROLLBACK")          
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
-        def current_transaction
-          puts "=== current_transaction"
-          @trans
-        end
-
         def current_connection
-          puts "=== current_connection"
           @handle
         end
 
         def []=(attr, value)
-          puts "=== set attr #{attr} with #{value}"
           if attr == 'AutoCommit' then
             self.do("SET IMPLICIT_TRANSACTIONS " + (value ? "OFF" : "ON"))
             @attr[attr] = value
