@@ -1,0 +1,8 @@
+--- 
+format: 1
+handler: 
+  commit: fb95e0521aa9d8193acbab87775e092a900b6f2b
+  branch: master
+lock: false
+repository_class: Piston::Git::Repository
+repository_url: git://rubyforge.org/ruby-dbi.git

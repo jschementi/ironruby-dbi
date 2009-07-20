@@ -1,0 +1,88 @@
+= DBD Specification Version 0.4.0
+By Erik Hollensbe <erik@hollensbe.org>
+
+== FOREWORD
+
+DBI is still in a large state of flux. Previous versions of this
+specification rarely reflected reality, and the 0.4.0 release is an
+attempt to get the code and documentation in touch with each other to
+better reflect said reality.
+
+While this is a goal, nobody's perfect and there is still a lot of
+code to check, sanitize, and otherwise clean up. If you find something
+missing in these specifications while working on a new DBD or a patch
+for DBI, please, do not do what everything else is doing; alert the
+appropriate person to get the spec revised. Doing this will save
+yourself (and the DBI authors) infinite amounts of time.
+
+== WHAT A DBD IS
+
+DBD stands for "DataBase Driver" and is the layer that DBI uses to interface
+with the database. DBDs often employ a low level driver to do the real work
+with the database, leaving the DBD itself to act as a medium between DBI and
+that lower level API.
+
+This allows a great deal of flexibility without having to sacrifice features
+for compatibility. For example, instead of having one PostgreSQL DBD that
+handles all version of PostgreSQL and attempts to limit it's functionality
+based on what version it detects (a error-prone and time/design prohibitive
+process), one can write two PostgreSQL DBD that handle the differences between
+"new" and "old" postgres, all while talking to the same low-level driver (yet
+leveraging different functionality). This method leads to cleaner internals and
+puts the choice of which to use on the end-user, who is probably a lot more
+informed about what features they want than your code.
+
+One traditionally loads a DBD using the DBI.connect method (see DBD LOAD
+PATHS below) which will attempt to load the DBD, connect to the database with
+the arguments supplied and return a DatabaseHandle if successful. However, if
+the DBD is written properly, requiring it directly without DBI's involvement
+(or existence) should not be an issue.
+
+== WHERE DBDs LIVE
+
+DBDs have an expected require path to be loaded by DBI. DBI will attempt to
+load the middle portion of the DBI.connect DSN provided.
+
+Example: DBI.connect("dbi:Mysql:mydb") # requires 'dbd/Mysql'
+
+Since rubygems potentially renders this path virtual, it is not OK to expect
+this path physically exists in one spot on the filesystem. Many assuptions are
+currently made about this and will be pruned in 0.6.0.
+
+If you wish to create submodules for your DBD, create a directory in the 'dbd'
+directory named the same as the DBD. (E.g., "dbd/Mysql" would have a directory
+with files in it relating to the Mysql.rb file that DBI loads).
+
+== HOW DBI INTERFACES WITH YOUR DBD
+
+Your DBD will create classes representing a DBI::BaseDriver, DBI::BaseDatabase,
+and DBI::BaseStatement. DBI will link these to DBI::DriverHandle,
+DBI::DatabaseHandle, and DBI::StatementHandle respectively. Your classes will
+be called by the Handle classes to retreive information to manipulate and send
+to the user. This manipulation can be influenced in a number of ways. 
+
+It is strongly recommended you make the effort to read the RDoc for all six
+of these classes, as they are the meat of this specification, not this
+document.
+
+== BUILDING A DBD FROM SCRATCH
+
+For the purposes of this discussion, we'll call your driver 'Foo'.
+
+Create your module, DBI::DBD::Foo. Store it somewhere in your load path under
+dbd/Foo.rb.
+
+Create classes Driver, Database, and Statement in this new namespace, which
+inherit from DBI::BaseDriver, DBI::BaseDatabase, and DBI::BaseStatement.
+Override (at mininum) the methods that return NotImplementedError in your new
+classes.
+
+Create a method in the root namespace named +driver_name+. This should return a
+string with a short name for your driver, this key will be used in type
+conversion.
+
+Everything else is up to you, up to and including worrying about interacting
+with the database.
+
+At this point, you should be ready to test your driver. See test/DBD_TESTS for
+information on how to configure that.

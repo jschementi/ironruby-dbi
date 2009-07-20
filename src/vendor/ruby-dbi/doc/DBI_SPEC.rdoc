@@ -1,0 +1,157 @@
+= DBI Interface Spec, for version 0.4.0
+
+by Erik Hollensbe <erik@hollensbe.org>
+
+== Foreword
+
+DBI is still in a large state of flux. Previous versions of this
+specification rarely reflected reality, and the 0.4.0 release is an
+attempt to get the code and documentation more in sync.
+
+While this is the goal, there is still a lot of
+code to check, sanitize, and otherwise clean up. If you find something
+missing in these specifications while working on a new DBD or a patch
+for DBI, please bring it to our attention (in IRC or on the mailing list)
+to get the spec revised. Doing this will save
+yourself (and the DBI authors) a lot of time.
+
+== Design
+
+With DBI, there are the concepts of driver, database, and statement. The core
+functionality for these concepts is provided by a database driver, or
+DBD.  DBI controls one or more drivers at once, a driver has databases, a
+database may have statements.
+
+DBI uses a delegation model to communicate with its DBDs through a
+series of handles.  When a connection to a database is requested, DBI contacts
+the appropriate DBD and builds a handle in
+its name that it aligns with a DBI base class for that concept. The
+handle provided by the DBD is the first-class method of communication,
+otherwise it resorts to calling the base class methods.  This allows
+DBI to provide a level of consistency unless the DBD author finds it
+otherwise unnecessary.
+
+For example: DBI will provide handy methods like fetch_all and
+fetch_scroll which all leverage the fetch method in the base class,
+and the fetch method must be implemented by the DBD. However, the DBD
+may have an internal representation of fetch_scroll (as is the case
+with the ODBC driver) that may be more suited to direct use, and
+therefore DBI will never see the base class method. This is similar to
+inheritance, but there is a distinct disconnect between the handles
+and the base classes, intentionally so. This way the DBDs have no
+access to the base class and DBI does all the delegation work. Also,
+DBI has no idea what the DBD is doing underneath, nor does it need to
+care as long as valid data is returned.
+
+== Classes
+
+These are the classes that make up the core of DBI and provide
+various functionality:
+
+=== DBI
+Core module, responsible for everything underneath it, kickstarting
+connections and loading drivers.
+
+=== DBI::Row
+
+Responsible for representing the result set and managing the type
+conversion of the result set. 
+
+=== DBI::Utils
+
+Utility methods which propogate through the rest of DBI.
+
+=== DBI::SQL
+
+Utility methods for working with SQL queries. Includes a
+driver-independent SQL bind manager.
+
+=== DBI::ColumnInfo
+
+Responsible for representing the information per column for both
+queries and table descriptions.
+
+=== DBI::Type
+
+Namespace for typecasting classes. These classes are provided with a
+parse method which converts them to a native Ruby type from a string.
+
+=== DBI::TypeUtil
+
+The inverse of DBI::Type, this provides functionality to turn native
+Ruby types into a representation suitable for the DBD's queries.
+
+=== DBI::Binary
+
+The representation of a BLOB/CLOB in a Ruby object. This will
+eventually be rolled into DBI::Type::, but remains here currently for
+compatibility purposes.
+
+=== DBI::Base* and DBI::*Handle
+
+Please see the Design section above for the description of these modules.
+
+== Exceptions
+
+DBI has a slew of custom exceptions it uses to control program flow,
+and alert the user to specific classes of problems.
+
+They currently all live in the DBI namespace, although it's expected
+that there will eventually be an exception namespace.
+
+=== DBI::Warning < RuntimeError
+    For important warnings such as data truncation, etc.
+
+=== DBI::Error < RuntimeError
+    Base class of all other error exceptions.
+    Rescue this to rescue all DBI errors.
+
+=== DBI::InterfaceError < DBI::Error
+    Exception for errors related to the DBI interface rather 
+    than the database itself.
+
+=== DBI::NotImplementedError < DBI::InterfaceError
+    Exception raised if the DBD driver has not specified
+    a mandatory method.
+
+=== DBI::DatabaseError < DBI::Error
+    Exception for errors related to the database.
+ 
+    Has three attributes: ((|err|)), ((|errstr|)) and ((|state|)).
+
+=== DBI::DataError < DBI::DatabaseError
+    Exception for errors due to problems with the processed 
+    data, such as division by zero, numeric value out of range, etc.
+
+=== DBI::OperationalError < DBI::DatabaseError
+    Exception for errors related to the database's operation which
+    are not necessarily under the control of the programmer.  This would include
+    such things as unexpected disconnection, failure to find a datasource name,
+    failure to process a transaction, memory allocation errors, etc.
+
+=== DBI::IntegrityError < DBI::DatabaseError
+    Exception raised when the relational integrity of the database
+    is affected, such as when a foreign key constraint is violated.
+
+=== DBI::InternalError < DBI::DatabaseError
+    Exception raised when the database encounters an internal error, 
+    such as a cursor not being valid anymore, or a transaction going out of
+    sync.
+
+=== DBI::ProgrammingError < DBI::DatabaseError
+    Exception raised for programming errors, e.g., table not found
+    or already exists, syntax error in SQL statement, wrong number
+    of parameters specified, etc.
+
+=== DBI::NotSupportedError < DBI::DatabaseError
+    Raised if, e.g., ((<commit>)) is called for a database that does not
+    support transactions.
+
+== API
+
+To save my sanity, I have joined the specification and the rdoc for
+DBI. Please review the specification there.
+
+If you wish to author your own DBD, please see DBD_SPEC.rdoc,
+which is a more in-depth view of the communication between DBI and
+DBDs.

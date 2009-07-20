@@ -1,7 +1,6 @@
-require 'mscorlib'
-require 'System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-require 'System.Data, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-#require File.dirname(__FILE__) + '/Workarounds.dll'
+$: << File.dirname(__FILE__) + "/../vendor/ruby-dbi"
+require 'dbi'
+require 'System.Data'
 
 module DBI
   module DBD
