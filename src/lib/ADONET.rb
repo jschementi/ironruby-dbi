@@ -210,7 +210,7 @@ module DBI
           finish if not SQL.query?(@statement)
           # TODO: SELECT and AutoCommit finishes the result-set
           #       what to do?
-          if @db['AutoCommit'] == true and not SQL.query?(@statement) then
+          if @db['AutoCommit'] and not SQL.query?(@statement) then
             @db.commit
           end
         rescue RuntimeError => err
@@ -237,18 +237,20 @@ module DBI
         def column_info
           
           infos = schema.rows.collect do |row|
-            name = DataWorkarounds.get_row_value row, "ColumnName"
-            dtn = DataWorkarounds.get_row_value(row, "DataTypeName").to_s
+            name = row["ColumnName"]
+            def_val_col = row.table.columns[name]
+            def_val = def_val_col.nil? ? nil : def_val_col.default_value
+            dtn = row["DataTypeName"].to_s
             {
               :name => name.to_s,
               :sql_type => SQL_TYPE_NAMES[dtn.upcase.to_sym],
               :type_name => CLR_TYPES[dtn.upcase.to_sym],
-              :precision => DataWorkarounds.get_row_value(row, "NumericPrecision"),
-              :default => DataWorkarounds.get_default_value(row, name),
-              :scale => DataWorkarounds.get_row_value(row, "NumericScale"),
-              :nullable => DataWorkarounds.get_row_value(row, "AllowDBNull"),
+              :precision => row["NumericPrecision"],
+              :default => def_val,
+              :scale => row["NumericScale"],
+              :nullable => row["AllowDBNull"],
               :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
-              :unique => DataWorkarounds.get_row_value(row, "IsUnique")
+              :unique => row["IsUnique"]
             }            
           end
           infos
