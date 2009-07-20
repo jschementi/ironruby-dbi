@@ -1,0 +1,9 @@
+desc "Tests the dbd driver for adonet"
+task :test_dbd do
+    ruby("test/ts_dbd.rb")
+end
+
+
+task :test => [:test_dbd]
+
+task :default => :test

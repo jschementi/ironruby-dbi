@@ -9,7 +9,6 @@ module DBI
     # to explain the same requirements.
     #
     class BaseDriver < Base
-      
         def initialize(dbi_version)
             major, minor = dbi_version.split(".").collect { |x| x.to_i }
             dbi_major, dbi_minor = DBI::VERSION.split(".").collect { |x| x.to_i }
