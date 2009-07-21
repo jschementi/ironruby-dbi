@@ -105,12 +105,14 @@ module DBI
 
         def finish
           @reader.close if @reader and not @reader.is_closed
-
+          
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
-        alias_method :cancel, :finish
+        def cancel
+          @command.cancel
+        end
 
         def schema
 

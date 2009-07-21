@@ -61,7 +61,7 @@
           if dbtype == "postgresql"
               @sth = @dbh.prepare('select E\'\\\\\'')
           elsif dbtype == "mssql"
-            @sth = @dbh.prepare 'select \'\\\\\' ESCAPE \'\\\''
+            @sth = @dbh.prepare 'select \'\\\'' 
           else
               @sth = @dbh.prepare('select \'\\\\\'')
           end

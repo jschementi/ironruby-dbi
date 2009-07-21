@@ -75,6 +75,7 @@ namespace AdoNetExploration
 //            conn.Close();
             var cmd = conn.CreateCommand();
             cmd.CommandText = "select * from precision_test";// schemaQuery;
+            
             conn.Open();
             var rdr = cmd.ExecuteReader();
             var sdt = rdr.GetSchemaTable();
