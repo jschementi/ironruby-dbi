@@ -109,7 +109,7 @@ module DBI
           raise DBI::DatabaseError.new(err.message)
         end
 
-        def transaction
+        def current_transaction
           @trans
         end
 

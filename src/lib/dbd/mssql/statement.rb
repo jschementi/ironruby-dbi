@@ -67,7 +67,7 @@ module DBI
           @command = @connection.create_command
           @statement = statement.to_s
           @command.command_text = @statement.to_clr_string
-          @command.transaction = db.transaction if db.has_transaction?
+          @command.transaction = db.current_transaction if db.has_transaction?
           @current_index = 0
           @db = db
         end
@@ -88,10 +88,10 @@ module DBI
           @reader = @command.execute_reader
           schema
 
-          #unless SQL.query?(@statement.to_s)
-          #  finish
-          #end           
-          rows
+          unless SQL.query?(@statement.to_s)
+            finish
+          end           
+          @reader.records_affected
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
@@ -127,9 +127,9 @@ module DBI
                     :name => name.to_s,
                     :sql_type => SQL_TYPE_NAMES[dtn.upcase.to_sym],
                     :type_name => CLR_TYPES[dtn.upcase.to_sym],
-                    :precision => row["NumericPrecision"],
+                    :precision => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? row["ColumnSize"] : row["NumericPrecision"],
                     :default => def_val,
-                    :scale => row["NumericScale"],
+                    :scale => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? nil : row["NumericScale"]  ,
                     :nullable => row["AllowDBNull"],
                     :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
                     :unique => row["IsUnique"]
@@ -142,7 +142,8 @@ module DBI
 
         def rows
           return 0 if @reader.nil?
-          @reader.records_affected
+          res = @reader.records_affected
+          res == -1 ? 0 : res
         end
 
         private
