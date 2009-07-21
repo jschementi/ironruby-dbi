@@ -1,3 +1,5 @@
+#ENV['HOME'] = File.expand_path("~") if ENV['HOME'].nil?
+
 require 'rubygems'
 gem 'test-unit'
 # figure out what tests to run
@@ -11,7 +13,7 @@ else
     $:.unshift('lib')
 end
 
-require 'dbd/ADONET'
+#require 'dbi'
 
 module Test::Unit::Assertions
     def build_message(head, template=nil, *arguments)
@@ -39,8 +41,7 @@ module DBDConfig
         config = nil
 
         begin
-          #config = YAML.load_file(File.join(ENV["HOME"], ".ruby-dbi.test-config.yaml"))
-          config = YAML.load_file(File.join("C:/Users/ivan", ".ruby-dbi.test-config.yaml"))
+          config = YAML.load_file(File.join(ENV["HOME"], ".ruby-dbi.test-config.yaml"))
         rescue Exception => e
             config = { }
             config["dbtypes"] = [ ]
@@ -60,10 +61,11 @@ module DBDConfig
                 dbh.commit rescue nil
                 dbh["AutoCommit"] = true rescue nil
                 dbh.do(stmt)
-                #dbh.commit unless dbtype == 'sqlite3'
+                dbh.commit unless dbtype == 'sqlite3'
             rescue Exception => e
                 puts "Error injecting '#{stmt}' for db #{dbtype}"
                 puts "Error: #{e.message}"
+              puts "Inner Error: #{e.InnerException}"
             end
             #STDERR.reopen(tmp)
         end
@@ -111,7 +113,6 @@ if __FILE__ == $0
     Deprecate.set_action(proc { })
 
     config = DBDConfig.get_config
-    puts config
     config["dbtypes"] = ENV["DBTYPES"].split(/\s+/) if ENV["DBTYPES"]
 
     if config and config["dbtypes"]
@@ -122,9 +123,8 @@ if __FILE__ == $0
             end
 
             # base.rb is special, see DBD_TESTS
-            puts "path to tests: dbd/#{dbtype}"
             require "dbd/#{dbtype}/base.rb"
-            Dir["dbd/#{dbtype}/test*.rb"].each { |file| puts file; require file }
+            Dir["dbd/#{dbtype}/test*.rb"].each { |file| require file }
             # run the general tests
             DBDConfig.current_dbtype = dbtype.to_sym
             Dir["dbd/general/test*.rb"].each { |file| load file; @class.name = file; DBDConfig.suite << @class }

@@ -30,6 +30,7 @@
         {
             this.dgSchema = new System.Windows.Forms.DataGridView();
             this.cbTable = new System.Windows.Forms.ComboBox();
+            this.cbProviders = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dgSchema)).BeginInit();
             this.SuspendLayout();
             // 
@@ -47,17 +48,27 @@
             // cbTable
             // 
             this.cbTable.FormattingEnabled = true;
-            this.cbTable.Location = new System.Drawing.Point(13, 13);
+            this.cbTable.Location = new System.Drawing.Point(356, 12);
             this.cbTable.Name = "cbTable";
             this.cbTable.Size = new System.Drawing.Size(387, 21);
             this.cbTable.TabIndex = 1;
             this.cbTable.SelectedIndexChanged += new System.EventHandler(this.cbTable_SelectedIndexChanged);
+            // 
+            // cbProviders
+            // 
+            this.cbProviders.FormattingEnabled = true;
+            this.cbProviders.Location = new System.Drawing.Point(12, 11);
+            this.cbProviders.Name = "cbProviders";
+            this.cbProviders.Size = new System.Drawing.Size(317, 21);
+            this.cbProviders.TabIndex = 2;
+            this.cbProviders.SelectedIndexChanged += new System.EventHandler(this.cbProviders_SelectedIndexChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(755, 571);
+            this.Controls.Add(this.cbProviders);
             this.Controls.Add(this.cbTable);
             this.Controls.Add(this.dgSchema);
             this.Name = "Form1";
@@ -73,6 +84,7 @@
 
         private System.Windows.Forms.DataGridView dgSchema;
         private System.Windows.Forms.ComboBox cbTable;
+        private System.Windows.Forms.ComboBox cbProviders;
     }
 }
 

@@ -1,10 +1,10 @@
 module DBI
   module DBD
-    module ADONET
+    module MSSQL
 
       class Driver < DBI::BaseDriver
 
-        DEFAULT_PROVIDER = "System.Data.SQLite"
+        DEFAULT_PROVIDER = "System.Data.SqlServer"
 
         include System::Data::Common
 
@@ -13,13 +13,12 @@ module DBI
         end
 
         def connect(driver_url, user, auth, attr)
-          provider, connection = parse_connection_string(driver_url)
-          load_factory PROVIDERS[provider.downcase.to_sym]
-          conn = @factory.create_connection
-          conn.connection_string = connection
-          conn.open
+          load_factory PROVIDERS[:mssql]
+          connection = @factory.create_connection
+          connection.connection_string = driver_url
+          connection.open
 
-          return Database.new(conn, attr);
+          return Database.new(connection, attr);
 
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
@@ -33,6 +32,15 @@ module DBI
           else
             raise InterfaceError, "Invalid provider name"
           end
+        end
+
+        def data_sources
+          load_factory PROVIDERS[:mssql]
+          conn = @factory.create_connection
+          conn.open
+          ret = conn.get_schema("Databases").rows.collect { |db| db.to_s unless %w(master tempdb model msdb).include? db.to_s  }
+          conn.close
+          ret
         end
 
         def load_factory(provider_name)

@@ -1,6 +1,6 @@
 module DBI
   module DBD
-    module ADONET
+    module MSSQL
 
       class Statement < DBI::BaseStatement
 
@@ -71,7 +71,7 @@ module DBI
           @db = db
         end
 
-        def bind_param(name, value, attribs)
+        def bind_param(name, value, attribs={})
           parameter = @command.create_parameter
           parameter.ParameterName = name
           parameter.Value = value
@@ -139,7 +139,7 @@ module DBI
         private
 
         def read_row(record)
-          (0...schema.columns.count).collect do |i|
+          (0...schema.rows.count).collect do |i|
             res = record.get_value(i)
             if res.is_a?(System::Guid)
               res.to_string.to_s
