@@ -114,7 +114,7 @@ module DBI
 
         def schema
 
-          @schema ||= @reader.get_schema_table
+          @schema ||= @reader.get_schema_table || []
         end
 
         def column_info
@@ -134,8 +134,8 @@ module DBI
                     :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
                     :unique => row["IsUnique"]
             }
-          end if schema.nil? and not SQL.query?(@statement)
-          infos || []
+          end 
+          infos
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
