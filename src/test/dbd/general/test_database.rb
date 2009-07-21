@@ -176,8 +176,8 @@
       assert @dbh["AutoCommit"] # should be true
 
       # test setting
-      #assert !(@dbh["AutoCommit"] = false)
-      #assert !@dbh["AutoCommit"]
+      assert !(@dbh["AutoCommit"] = false)
+      assert !@dbh["AutoCommit"]
 
       # test committing an outstanding transaction
 

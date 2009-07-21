@@ -80,7 +80,7 @@ module DBI
         end
 
         def disconnect
-          self.rollback unless @attr['AutoCommit']
+          @trans.rollback unless @trans.nil? && @attr['AutoCommit']
           @handle.close
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
@@ -107,6 +107,14 @@ module DBI
           @handle.get_schema("Tables").rows.collect { |row| row["TABLE_NAME"].to_s }
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
+        end
+
+        def transaction
+          @trans
+        end
+
+        def has_transaction?
+          !@trans.nil?
         end
 
         def columns(table)
@@ -152,13 +160,20 @@ module DBI
         end
 
         def commit
-          self.do("COMMIT") unless @attr['AutoCommit']
+          #self.do("COMMIT") unless @attr['AutoCommit']
+          unless @attr['AutoCommit']
+            @trans.commit if @trans
+            @trans = @handle.begin_transaction
+          end
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def rollback
-          self.do("ROLLBACK") unless @attr['AutoCommit']         
+          unless @attr['AutoCommit']
+            @trans.rollback if @trans
+            @trans = @handle.begin_transaction
+          end
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
@@ -178,14 +193,13 @@ module DBI
         end
 
         def []=(attr, value)
-          if attr == 'AutoCommit' and @attr[attr] != value then
-            self.commit if value == true
-            self.do("SET IMPLICIT_TRANSACTIONS " + (value ? "OFF" : "ON"))
-            puts "=== setting transactions #{value ? "OFF" : "ON"}"
-            @attr[attr] = value
-          else
-            @attr[attr] = value
+          if attr == 'AutoCommit' and @attr[attr] != value
+
+            self.commit if value
+            @trans.rollback unless @trans.nil?
+            @trans = nil
           end
+          @attr[attr] = value
         end
 
       end # class Database

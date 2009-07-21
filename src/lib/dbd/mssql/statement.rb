@@ -67,7 +67,7 @@ module DBI
           @command = @connection.create_command
           @statement = statement.to_s
           @command.command_text = @statement.to_clr_string
-
+          @command.transaction = db.transaction if db.has_transaction?
           @current_index = 0
           @db = db
         end
