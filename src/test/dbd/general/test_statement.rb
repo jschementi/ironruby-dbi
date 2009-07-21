@@ -54,21 +54,23 @@
     end
   end
 
-  #def test_quoting # FIXME breaks sqlite-ruby to a segfault - research
-  #    @sth = nil
-  #
-  #    assert_nothing_raised do
-  #        if dbtype == "postgresql"
-  #            @sth = @dbh.prepare('select E\'\\\\\'')
-  #        else
-  #            @sth = @dbh.prepare('select \'\\\\\'')
-  #        end
-  #        @sth.execute
-  #        row = @sth.fetch
-  #        assert_equal ['\\'], row
-  #        @sth.finish
-  #    end
-  #end
+  def test_quoting # FIXME breaks sqlite-ruby to a segfault - research
+      @sth = nil
+
+      assert_nothing_raised do
+          if dbtype == "postgresql"
+              @sth = @dbh.prepare('select E\'\\\\\'')
+          elsif dbtype == "mssql"
+            @sth = @dbh.prepare 'select \'\\\\\' ESCAPE \'\\\''
+          else
+              @sth = @dbh.prepare('select \'\\\\\'')
+          end
+          @sth.execute
+          row = @sth.fetch
+          assert_equal ['\\'], row
+          @sth.finish
+      end
+  end
 
   def test_duplicate_columns
     @sth = nil
