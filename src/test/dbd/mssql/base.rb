@@ -10,7 +10,7 @@ DBDConfig.set_testbase(:mssql, Class.new(Test::Unit::TestCase) do
 
     def set_base_dbh
       config = DBDConfig.get_config["mssql"]
-      @dbh = DBI.connect("dbi:MSSQL:data source=#{config["server"] || "(local)"};initial catalog=#{config["dbname"]};user id=#{config["username"]};password=#{config["password"]}", config["username"], config["password"], { })
+      @dbh = DBI.connect("dbi:mssql:data source=#{config["server"] || "(local)"};initial catalog=#{config["dbname"]};user id=#{config["username"]};password=#{config["password"]}", config["username"], config["password"], { })
     end
 
     def setup

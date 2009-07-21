@@ -93,7 +93,7 @@ module DBI
     VERSION = "0.4.1"
 
     module DBD # :nodoc:
-        API_VERSION = "0.3"
+        API_VERSION = "0.4"
     end
 
     #  Module functions (of DBI)

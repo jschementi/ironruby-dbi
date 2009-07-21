@@ -33,24 +33,26 @@ namespace AdoNetExploration
 
         static void Main(string[] args)
         {
+            var dt = DbProviderFactories.GetFactoryClasses();
+
             DbConnection conn = new SqlConnection("data source=.;initial catalog=dbitest;user id=sa;password=Password123");
-            conn.Open();
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = schemaQuery;
-            var rdr = cmd.ExecuteReader();
-            var dt = rdr.GetSchemaTable();
+//            conn.Open();
+//            var cmd = conn.CreateCommand();
+//            cmd.CommandText = schemaQuery;
+//            var rdr = cmd.ExecuteReader();
+//            var dt = rdr.GetSchemaTable();
             
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                List<string> res = new List<string>();
-                foreach (var o in dt.Rows[i].ItemArray)
-                {
-                    res.Add(o.ToString());
-                }
-                Console.WriteLine(string.Join(", ", res.ToArray()));
-            }
-            conn.Close();
-            Console.WriteLine("# of rows: " + dt.Rows.Count);
+//            for (int i = 0; i < dt.Rows.Count; i++)
+//            {
+//                List<string> res = new List<string>();
+//                foreach (var o in dt.Rows[i].ItemArray)
+//                {
+//                    res.Add(o.ToString());
+//                }
+//                Console.WriteLine(string.Join(", ", res.ToArray()));
+//            }
+//            conn.Close();
+//            Console.WriteLine("# of rows: " + dt.Rows.Count);
 //            DataSet ds = new DataSet();
 //            var schema = conn.GetSchema();
 //
@@ -71,11 +73,27 @@ namespace AdoNetExploration
 //            var rdr = cmd.ExecuteReader(CommandBehavior.SchemaOnly);
 //            var sdt = rdr.GetSchemaTable();
 //            conn.Close();
-//            foreach (DataRow row in sdt.Rows)
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = "select * from users";// schemaQuery;
+            conn.Open();
+            var rdr = cmd.ExecuteReader();
+                var sb = new StringBuilder();
+            while(rdr.Read())
+            {
+                for(int i=0; i < rdr.VisibleFieldCount; i++)
+                {
+                    var dtn = rdr.GetDataTypeName(i);
+                    sb.AppendFormat("{0}: {1}" + Environment.NewLine, rdr.GetName(i), rdr.GetValue(i)); 
+                }
+                sb.Append(Environment.NewLine + "=======" + Environment.NewLine);
+            }
+            Console.WriteLine(sb.ToString());
+            conn.Close();
+//            foreach (DataRow row in dt.Rows)
 //            {
 //                //            var row = dt.Rows[0];
 //                var sb = new StringBuilder();
-//                foreach (DataColumn col in sdt.Columns)
+//                foreach (DataColumn col in dt.Columns)
 //                {
 //                    sb.AppendFormat("{0}: {1}" + Environment.NewLine, col.ColumnName, row[col]);
 //                }

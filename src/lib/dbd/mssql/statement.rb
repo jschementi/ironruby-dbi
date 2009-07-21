@@ -65,17 +65,20 @@ module DBI
         def initialize(statement, db)
           @connection = db.current_connection;
           @command = @connection.create_command
-          @statement = @command.command_text = statement
-          
+          @statement = statement.to_s
+          @command.command_text = @statement.to_clr_string
+
           @current_index = 0
           @db = db
         end
 
         def bind_param(name, value, attribs={})
-          parameter = @command.create_parameter
-          parameter.ParameterName = name
-          parameter.Value = value
-          @command.parameters.add parameter
+          unless name.to_s.empty?
+            parameter = @command.create_parameter
+            parameter.ParameterName = name.to_s.to_clr_string
+            parameter.Value = value.is_a?(String) ? value.to_clr_string : value
+            @command.parameters.add parameter
+          end
         end
 
         def execute
@@ -83,32 +86,38 @@ module DBI
           @rows = []
           @schema = nil
           @reader = @command.execute_reader
+          schema
 
-          finish unless SQL.query?(@statement)
-          
+          #unless SQL.query?(@statement.to_s)
+          #  finish
+          #end           
+          rows
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def fetch
-          @reader.read ? read_row(@reader) : nil
+          res = @reader.read ? read_row(@reader) : nil
+          res
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def finish
-          @reader.close if @reader
+          @reader.close if @reader and not @reader.is_closed
 
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
 
+        alias_method :cancel, :finish
+
         def schema
+
           @schema ||= @reader.get_schema_table
         end
 
         def column_info
-
           infos = schema.rows.collect do |row|
             name = row["ColumnName"]
             def_val_col = row.table.columns[name]
@@ -125,8 +134,8 @@ module DBI
                     :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
                     :unique => row["IsUnique"]
             }
-          end
-          infos
+          end if schema.nil? and not SQL.query?(@statement)
+          infos || []
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
         end
@@ -139,7 +148,8 @@ module DBI
         private
 
         def read_row(record)
-          (0...schema.rows.count).collect do |i|
+          #(0...schema.rows.count).collect do |i|
+          (0...record.visible_field_count).collect do |i|
             res = record.get_value(i)
             if res.is_a?(System::Guid)
               res.to_string.to_s

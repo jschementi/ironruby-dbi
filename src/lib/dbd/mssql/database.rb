@@ -82,12 +82,12 @@ module DBI
         def disconnect
           self.rollback unless @attr['AutoCommit']
           @handle.close
-        rescue MyError => err
-          error(err)
+        rescue RuntimeError => err
+          raise DBI::DatabaseError.new(err.message)
         end
 
         def prepare(statement)
-          Statement.new(statement.to_s.to_clr_string, self)
+          Statement.new(statement, self)
         end
 
         def ping
@@ -131,7 +131,7 @@ module DBI
               WHERE object_name(c.object_id) = @table_name
               order by table_name"
           stmt = prepare(sql)
-          stmt.bind_param("table_name", table.to_clr_string)
+          stmt.bind_param("table_name", table)
           stmt.execute
           ret = stmt.fetch_all.collect do |row|
             ColumnInfo.new({
@@ -163,16 +163,28 @@ module DBI
           raise DBI::DatabaseError.new(err.message)
         end
 
+        def do(stmt, bindvars={})
+          st = prepare(stmt)
+          bindvars.each { |k, v| st.bind_param(k, v) }
+          res = st.execute
+          st.finish
+          return res
+        rescue RuntimeError => err
+          raise DBI::DatabaseErrro.new(err.message)
+        end
+
         def current_connection
           @handle
         end
 
         def []=(attr, value)
-          if attr == 'AutoCommit' then
+          if attr == 'AutoCommit' and @attr[attr] != value then
+            self.commit if value == true
             self.do("SET IMPLICIT_TRANSACTIONS " + (value ? "OFF" : "ON"))
+            puts "=== setting transactions #{value ? "OFF" : "ON"}"
             @attr[attr] = value
           else
-            super
+            @attr[attr] = value
           end
         end
 
