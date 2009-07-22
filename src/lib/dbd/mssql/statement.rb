@@ -75,9 +75,15 @@ module DBI
         def bind_param(name, value, attribs={})
           unless name.to_s.empty?
             parameter = @command.create_parameter
-            parameter.ParameterName = name.to_s.to_clr_string
+            parm_name = name.to_s.to_clr_string
+            parameter.ParameterName = parm_name
             parameter.Value = value.is_a?(String) ? value.to_clr_string : value
-            @command.parameters.add parameter
+
+            if @command.parameters.contains(parm_name)
+              @command.parameters[parm_name] = parameter
+            else
+              @command.parameters.add parameter
+            end                                            
           end
         end
 
