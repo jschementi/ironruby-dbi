@@ -1,5 +1,0 @@
-C:\dev\ironruby-dbi\playground\AdoNetExploration\AdoNetExploration\bin\Debug\AdoNetExploration.exe
-C:\dev\ironruby-dbi\playground\AdoNetExploration\AdoNetExploration\bin\Debug\AdoNetExploration.pdb
-C:\dev\ironruby-dbi\playground\AdoNetExploration\AdoNetExploration\obj\Debug\ResolveAssemblyReference.cache
-C:\dev\ironruby-dbi\playground\AdoNetExploration\AdoNetExploration\obj\Debug\AdoNetExploration.exe
-C:\dev\ironruby-dbi\playground\AdoNetExploration\AdoNetExploration\obj\Debug\AdoNetExploration.pdb

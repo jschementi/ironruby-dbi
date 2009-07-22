@@ -1,8 +1,0 @@
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\bin\Debug\DataSetViewer.exe
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\bin\Debug\DataSetViewer.pdb
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\ResolveAssemblyReference.cache
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\DataSetViewer.Form1.resources
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\DataSetViewer.Properties.Resources.resources
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\DataSetViewer.csproj.GenerateResource.Cache
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\DataSetViewer.exe
-C:\dev\ironruby-dbi\playground\DataSetViewer\DataSetViewer\obj\Debug\DataSetViewer.pdb

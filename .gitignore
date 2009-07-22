@@ -1,4 +1,6 @@
 .idea
+playground/AdoNetExploration/AdoNetExploration/bin/*
+playground/DataSetViewer/DataSetViewer/bin/*
 _ReSharper.*
 _UpgradeReport_*
 *.resharper.user
@@ -12,3 +14,4 @@ output
 TestResults
 *.bak
 *.cache
+obj/*
