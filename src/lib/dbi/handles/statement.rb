@@ -79,7 +79,7 @@ module DBI
       end
 
       coltypes[pos-1] = type
-      @row = DBI::Row.new(column_names, coltypes, nil, false)
+      @row = DBI::Row.new(column_names, coltypes, nil, @convert_types)
     end
 
     #
@@ -108,9 +108,9 @@ module DBI
       cancel     # cancel before
       sanity_check({:prepared => true })
 
-      #if @convert_types
-      #    bindvars = DBI::Utils::ConvParam.conv_param(dbh.driver_name, *bindvars)
-      #end
+      if @convert_types
+          bindvars = DBI::Utils::ConvParam.conv_param(dbh.driver_name, bindvars)
+      end
 
       @handle.bind_params(bindvars)
       @handle.execute
@@ -119,7 +119,7 @@ module DBI
 
       # TODO:?
       #if @row.nil?
-      #@row = DBI::Row.new(column_names, column_types, nil, @convert_types)
+      @row = DBI::Row.new(column_names, column_types, nil, @convert_types)
       #end
       return nil
     end
@@ -209,7 +209,8 @@ module DBI
 
       if block_given?
         while (res = @handle.fetch) != nil
-          @row = DBI::Row.new(column_names, column_types, nil, false)
+          @row = @row.dup
+#          @row = DBI::Row.new(column_names, column_types, nil, false)
           @row.set_values(res)
           yield @row
         end
@@ -222,7 +223,8 @@ module DBI
           @handle.cancel
           @fetchable = false
         else
-          @row = DBI::Row.new(column_names, column_types, nil, false)
+#          @row = DBI::Row.new(column_names, column_types, nil, false)
+          @row = @row.dup
           @row.set_values(res)
           res = @row
         end
@@ -311,7 +313,7 @@ module DBI
         @fetchable = false
         return []
       else
-        @row = DBI::Row.new(column_names, column_types, nil, false)
+#        @row = DBI::Row.new(column_names, column_types, nil, false)
         return rows.collect{|r| tmp = @row.dup; tmp.set_values(r); tmp }
       end
     end

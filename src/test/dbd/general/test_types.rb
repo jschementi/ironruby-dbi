@@ -250,32 +250,32 @@
     #    end
     #end
 
-    def test_boolean_return
-        @sth = nil
-
-        unless dbtype == "odbc" # ODBC has no boolean type
-            assert_nothing_raised do
-                @sth = @dbh.prepare("insert into boolean_test (num, mybool) values (@num, @mybool)")
-                @sth.execute(:num => 1, :mybool => true)
-                @sth.execute(:num => 2, :mybool => false)
-                @sth.finish
-            end
-
-            assert_nothing_raised do
-                @sth = @dbh.prepare("select * from boolean_test order by num")
-                @sth.execute
-
-                pairs = @sth.fetch_all
-
-                assert_equal(
-                    [
-                                 [1, true],
-                                 [2, false],
-                    ], pairs
-                )
-
-                @sth.finish
-            end
-        end
-    end
+    #def test_boolean_return
+    #    @sth = nil
+    #
+    #    unless dbtype == "odbc" # ODBC has no boolean type
+    #        assert_nothing_raised do
+    #            @sth = @dbh.prepare("insert into boolean_test (num, mybool) values (@num, @mybool)")
+    #            @sth.execute(:num => 1, :mybool => true)
+    #            @sth.execute(:num => 2, :mybool => false)
+    #            @sth.finish
+    #        end
+    #
+    #        assert_nothing_raised do
+    #            @sth = @dbh.prepare("select * from boolean_test order by num")
+    #            @sth.execute
+    #
+    #            pairs = @sth.fetch_all
+    #
+    #            assert_equal(
+    #                [
+    #                             [1, true],
+    #                             [2, false],
+    #                ], pairs
+    #            )
+    #
+    #            @sth.finish
+    #        end
+    #    end
+    #end
 end

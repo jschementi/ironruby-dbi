@@ -71,11 +71,11 @@ module DBI
     def execute(stmt, bindvars={})
       sanity_check(stmt)
 
-      #if @convert_types
-      #  bindvars = DBI::Utils::ConvParam.conv_param(driver_name, bindvars)
-      #end
+      if @convert_types
+        bindvars = DBI::Utils::ConvParam.conv_param(driver_name, bindvars)
+      end
 
-      sth = StatementHandle.new(@handle.execute(stmt, bindvars), true, true, false, true)
+      sth = StatementHandle.new(@handle.execute(stmt, bindvars), true, true, @convert_types, true)
       # FIXME trace sth.trace(@trace_mode, @trace_output)
       sth.dbh = self
       sth.raise_error = raise_error
@@ -98,8 +98,8 @@ module DBI
     #
     def do(stmt, bindvars={})
       sanity_check(stmt)
-
       @handle.do(stmt, bindvars)
+      #@handle.do(stmt, DBI::Utils::ConvParam.conv_param(driver_name, bindvars))
     end
 
     #

@@ -122,7 +122,7 @@ module DBI
 
         def schema
 
-          @schema ||= @reader.get_schema_table || []
+          @schema ||= @reader.get_schema_table || System::Data::DataTable.new
         end
 
         def column_info
@@ -164,6 +164,8 @@ module DBI
               res.to_string.to_s
             elsif res.is_a?(System::DBNull)
               nil
+            elsif res.is_a? System::String
+              res.to_s
             else
               res
             end
