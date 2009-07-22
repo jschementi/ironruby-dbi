@@ -38,12 +38,13 @@
       2.times { @sth.fetch_all }
     end
 
-    #assert_raises(DBI::InterfaceError) do
-    #    prep_status_statement
-    #    @sth.execute
-    #    # XXX fetch_many won't know it can't fetch anything until the third time around.
-    #    3.times { @sth.fetch_many(names_rc) }
-    #end
+    assert_raises(DBI::InterfaceError) do
+        prep_status_statement
+        @sth.execute
+        # XXX fetch_many won't know it can't fetch anything until the third time around.
+        3.times { @sth.fetch_many(names_rc) }
+    end
+    @sth.finish
   end
 
   def test_execute
@@ -55,21 +56,21 @@
   end
 
   def test_quoting # FIXME breaks sqlite-ruby to a segfault - research
-      @sth = nil
+    @sth = nil
 
-      assert_nothing_raised do
-          if dbtype == "postgresql"
-              @sth = @dbh.prepare('select E\'\\\\\'')
-          elsif dbtype == "mssql"
-            @sth = @dbh.prepare 'select \'\\\'' 
-          else
-              @sth = @dbh.prepare('select \'\\\\\'')
-          end
-          @sth.execute
-          row = @sth.fetch
-          assert_equal ['\\'], row
-          @sth.finish
+    assert_nothing_raised do
+      if dbtype == "postgresql"
+        @sth = @dbh.prepare('select E\'\\\\\'')
+      elsif dbtype == "mssql"
+        @sth = @dbh.prepare 'select \'\\\''
+      else
+        @sth = @dbh.prepare('select \'\\\\\'')
       end
+      @sth.execute
+      row = @sth.fetch
+      assert_equal ['\\'], row
+      @sth.finish
+    end
   end
 
   def test_duplicate_columns
@@ -164,12 +165,12 @@
   end
 
   def test_duplicate_columns
-      assert_nothing_raised do
-          @sth = @dbh.prepare("select name, name from names where name = @name")
-          @sth.execute(:name => "Bob")
-          assert_equal [["Bob", "Bob"]], @sth.fetch_all
-          @sth.finish
-      end
+    assert_nothing_raised do
+      @sth = @dbh.prepare("select name, name from names where name = @name")
+      @sth.execute(:name => "Bob")
+      assert_equal [["Bob", "Bob"]], @sth.fetch_all
+      @sth.finish
+    end
   end
 
   def test_rows
@@ -228,75 +229,76 @@
 
 
   def test_prepare_execute_with_transactions
-      @dbh["AutoCommit"] = false
-      config = DBDConfig.get_config['sqlite3']
+    @dbh["AutoCommit"] = false
+    #config = DBDConfig.get_config['sqlite3']
 
-      ## rollback 1 (the right way)
-      #@sth = nil
-      #@sth2 = nil
-      #
-      #assert_nothing_raised do
-      #    @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
-      #    @sth.execute(:name => "Billy", :age => 23)
-      #    @sth2 = @dbh.prepare("select * from names where name = @name")
-      #    @sth2.execute(:name => "Billy")
-      #end
-      #assert_equal ["Billy", 23 ], @sth2.fetch
-      #@sth2.finish
-      #@sth.finish
-      #assert_nothing_raised { @dbh.rollback }
-      #
-      #@sth = @dbh.prepare("select * from names where name = @name")
-      #@sth.execute(:name => "Billy")
-      #assert_nil @sth.fetch
-      #@sth.finish
-      #
-      ## rollback 2 (without closing statements first)
-      #
-      #@sth = nil
-      #@sth2 = nil
-      #
-      #assert_nothing_raised do
-      #    @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
-      #    @sth.execute(:name => "Billy", :age => 23)
-      #    @sth2 = @dbh.prepare("select * from names where name = @name")
-      #    @sth2.execute(:name => "Billy")
-      #end
-      #
-      #assert_equal ["Billy", 23], @sth2.fetch
-      #
-      ## FIXME some throw here, some don't. we should probably normalize this
-      #@dbh.rollback rescue true
-      #
-      #@sth2.finish
-      #@sth.finish
-      #assert_nothing_raised { @dbh.rollback }
-      #
-      #@sth = @dbh.prepare("select * from names where name = @name")
-      #@sth.execute(:name => "Billy")
-      #assert_nil @sth.fetch
-      #@sth.finish
+    # rollback 1 (the right way)
+    @sth = nil
+    @sth2 = nil
 
-      # commit
+    assert_nothing_raised do
+        @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
+        @sth.execute(:name => "Billy", :age => 23)
+        @sth2 = @dbh.prepare("select * from names where name = @name")
+        @sth2.execute(:name => "Billy")
+    end
+    assert_equal ["Billy", 23 ], @sth2.fetch
+    @sth2.finish
+    @sth.finish
+    assert_nothing_raised { @dbh.rollback }
 
-      @sth = nil
-      @sth2 = nil
+    @sth = @dbh.prepare("select * from names where name = @name")
+    @sth.execute(:name => "Billy")
+    res = @sth.fetch
+    @sth.finish
+    assert_nil res
 
-      assert_nothing_raised do
-          @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
-          @sth.execute(:name => "Billy", :age => 23)
-          @sth2 = @dbh.prepare("select * from names where name = @name")
-          @sth2.execute(:name => "Billy")
-      end
-      assert_equal ["Billy", 23 ], @sth2.fetch
-      @sth2.finish
-      @sth.finish
-      assert_nothing_raised { @dbh.commit }
+    # rollback 2 (without closing statements first)
 
-      @sth = @dbh.prepare("select * from names where name = @name")
-      @sth.execute(:name => "Billy")
-      assert_equal ["Billy", 23 ], @sth.fetch
-      @sth.finish
+    @sth = nil
+    @sth2 = nil
+
+    assert_nothing_raised do
+        @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
+        @sth.execute(:name => "Billy", :age => 23)
+        @sth2 = @dbh.prepare("select * from names where name = @name")
+        @sth2.execute(:name => "Billy")
+    end
+
+    assert_equal ["Billy", 23], @sth2.fetch
+
+    # FIXME some throw here, some don't. we should probably normalize this
+    @dbh.rollback rescue true
+
+    @sth2.finish
+    @sth.finish
+    assert_nothing_raised { @dbh.rollback }
+
+    @sth = @dbh.prepare("select * from names where name = @name")
+    @sth.execute(:name => "Billy")
+    assert_nil @sth.fetch
+    @sth.finish
+
+    # commit
+
+    @sth = nil
+    @sth2 = nil
+
+    assert_nothing_raised do
+      @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
+      @sth.execute(:name => "Billy", :age => 23)
+      @sth2 = @dbh.prepare("select * from names where name = @name")
+      @sth2.execute(:name => "Billy")
+    end
+    assert_equal ["Billy", 23 ], @sth2.fetch
+    @sth2.finish
+    @sth.finish
+    assert_nothing_raised { @dbh.commit }
+
+    @sth = @dbh.prepare("select * from names where name = @name")
+    @sth.execute(:name => "Billy")
+    assert_equal ["Billy", 23 ], @sth.fetch
+    @sth.finish
   end
 
   def test_fetch
@@ -329,5 +331,6 @@
     assert row
     assert_equal ["Cooter", 69], row
     @sth.finish
+    @dbh["AutoCommit"] = true
   end
 end

@@ -172,24 +172,24 @@
   end
 
   def test_attrs
-      # test defaults
-      assert @dbh["AutoCommit"] # should be true
+    # test defaults
+    assert @dbh["AutoCommit"] # should be true
 
-      # test setting
-      assert !(@dbh["AutoCommit"] = false)
-      assert !@dbh["AutoCommit"]
+    # test setting
+    assert !(@dbh["AutoCommit"] = false)
+    assert !@dbh["AutoCommit"]
 
-      # test committing an outstanding transaction
+    # test committing an outstanding transaction
+    @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
+    @sth.execute(:name => "Billy", :age => 22)
+    @sth.finish
 
-      @sth = @dbh.prepare("insert into names (name, age) values (@name, @age)")
-      @sth.execute(:name => "Billy", :age => 22)
-      @sth.finish
+    assert @dbh["AutoCommit"] = true # should commit at this point
 
-      assert @dbh["AutoCommit"] = true # should commit at this point
-
-      @sth = @dbh.prepare("select * from names where name = @name")
-      @sth.execute(:name => "Billy")
-      assert_equal [ "Billy", 22 ], @sth.fetch
-      @sth.finish
+    @sth = @dbh.prepare("select * from names where name = @name")
+    @sth.execute(:name => "Billy")
+    res = @sth.fetch
+    @sth.finish
+    assert_equal [ "Billy", 22 ], res
   end
 end

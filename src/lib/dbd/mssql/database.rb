@@ -185,7 +185,7 @@ module DBI
           st.finish
           return res
         rescue RuntimeError => err
-          raise DBI::DatabaseErrro.new(err.message)
+          raise DBI::DatabaseError.new(err.message)
         end
 
         def current_connection
@@ -194,10 +194,12 @@ module DBI
 
         def []=(attr, value)
           if attr == 'AutoCommit' and @attr[attr] != value
-
-            self.commit if value
-            @trans.rollback unless @trans.nil?
-            @trans = nil
+            @trans.commit if @trans
+            unless value
+              @trans = @handle.begin_transaction unless @trans
+            else
+              @trans = nil
+            end
           end
           @attr[attr] = value
         end

@@ -311,6 +311,7 @@ module DBI
         @fetchable = false
         return []
       else
+        @row = DBI::Row.new(column_names, column_types, nil, false)
         return rows.collect{|r| tmp = @row.dup; tmp.set_values(r); tmp }
       end
     end
