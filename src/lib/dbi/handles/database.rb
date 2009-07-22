@@ -105,10 +105,10 @@ module DBI
     #
     # Executes a statement and returns the first row from the result.
     #
-    def select_one(stmt, *bindvars)
+    def select_one(stmt, bindvars={})
       sanity_check(stmt)
       row = nil
-      execute(stmt, *bindvars) do |sth|
+      execute(stmt, bindvars) do |sth|
         row = sth.fetch
       end
       row
@@ -118,10 +118,10 @@ module DBI
     # Executes a statement and returns all rows from the result. If a block
     # is given, it is executed for each row.
     #
-    def select_all(stmt, *bindvars, &p)
+    def select_all(stmt, bindvars={}, &p)
       sanity_check(stmt)
       rows = nil
-      execute(stmt, *bindvars) do |sth|
+      execute(stmt, bindvars) do |sth|
         if block_given?
           sth.each(&p)
         else
