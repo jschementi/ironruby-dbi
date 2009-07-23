@@ -163,10 +163,13 @@ module DBI
           #(0...schema.rows.count).collect do |i|
           (0...record.visible_field_count).collect do |i|
             res = record.get_value(i)
-            if res.is_a?(System::Guid)
+            case res
+            when System::Guid
               res.to_string.to_s
-            elsif res.is_a?(System::DBNull)
+            when System::DBNull
               nil
+            when System::Boolean
+              res.to_string.to_s
             #elsif res.is_a? System::String
             #  res.to_s
             else
