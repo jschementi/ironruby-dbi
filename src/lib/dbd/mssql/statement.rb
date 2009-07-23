@@ -132,15 +132,18 @@ module DBI
             def_val = def_val_col.nil? ? nil : def_val_col.default_value
             dtn = row["DataTypeName"].to_s
             {
-                    :name => name.to_s,
-                    :sql_type => SQL_TYPE_NAMES[dtn.upcase.to_sym],
-                    :type_name => CLR_TYPES[dtn.upcase.to_sym],
-                    :precision => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? row["ColumnSize"] : row["NumericPrecision"],
-                    :default => def_val,
-                    :scale => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? nil : row["NumericScale"]  ,
-                    :nullable => row["AllowDBNull"],
-                    :primary => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
-                    :unique => row["IsUnique"]
+
+                'name' => name.to_s,
+                'dbi_type' => MSSQL_TYPEMAP[dtn.upcase],
+                'mssql_type_name' => dtn.upcase,
+                'sql_type' =>MSSQL_TO_XOPEN[dtn.upcase][0],
+                'type_name' => DBI::SQL_TYPE_NAMES[MSSQL_TO_XOPEN[dtn.upcase][0]],
+                'precision' => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? row["ColumnSize"] : row["NumericPrecision"],
+                'default' => def_val,
+                'scale' => %w(varchar nvarchar char nchar text ntext).include?(dtn.downcase) ? nil : row["NumericScale"]  ,
+                'nullable' => row["AllowDBNull"],
+                'primary' => schema.primary_key.select { |pk| pk.column_name.to_s == name.to_s }.size > 0,
+                'unique' => row["IsUnique"]
             }
           end 
           infos
@@ -164,10 +167,10 @@ module DBI
               res.to_string.to_s
             elsif res.is_a?(System::DBNull)
               nil
-            elsif res.is_a? System::String
-              res.to_s
+            #elsif res.is_a? System::String
+            #  res.to_s
             else
-              res
+              res.to_s
             end
           end
         end

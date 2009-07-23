@@ -210,7 +210,6 @@ module DBI
       if block_given?
         while (res = @handle.fetch) != nil
           @row = @row.dup
-#          @row = DBI::Row.new(column_names, column_types, nil, false)
           @row.set_values(res)
           yield @row
         end
@@ -223,7 +222,6 @@ module DBI
           @handle.cancel
           @fetchable = false
         else
-#          @row = DBI::Row.new(column_names, column_types, nil, false)
           @row = @row.dup
           @row.set_values(res)
           res = @row
@@ -313,7 +311,6 @@ module DBI
         @fetchable = false
         return []
       else
-#        @row = DBI::Row.new(column_names, column_types, nil, false)
         return rows.collect{|r| tmp = @row.dup; tmp.set_values(r); tmp }
       end
     end
