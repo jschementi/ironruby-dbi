@@ -95,11 +95,11 @@ module DBI
                  when ::DBI::Binary
                     obj.to_s
                  when ::DateTime
-                     "'#{obj.strftime("%Y-%m-%d %H:%M:%S")}'"
+                     "#{obj.strftime("%Y-%m-%d %H:%M:%S")}"
                  when ::Time
-                     "'#{obj.strftime("%H:%M:%S")}'"
+                     "#{obj.strftime("%H:%M:%S")}"
                  when ::Date
-                     "'#{obj.strftime("%Y-%m-%d")}'"
+                     "#{obj.strftime("%Y-%m-%d")}"
                  when ::NilClass
                      System::DBNull.value             
                   when ::String, System::String
@@ -118,7 +118,7 @@ module DBI
                  else
                      obj
         end
-        #puts "### Converted #{obj} | #{obj.class} into #{newobj} | #{newobj.class}"
+        puts "### Converted #{obj} | #{obj.class} into #{newobj} | #{newobj.class}"
         if newobj.object_id == obj.object_id and not (obj.is_a?(::String) || obj.is_a?(System::String))
             [newobj, true]
         else
