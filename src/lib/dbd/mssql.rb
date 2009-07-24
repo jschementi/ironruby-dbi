@@ -93,9 +93,9 @@ module DBI
 
         newobj =
                 case obj
-                  when ::DBI::Binary
+                  when ::DBI::Timestamp, ::Numeric, ::DBI::Binary
                     obj.to_s
-                  when ::DBI::Timestamp, ::DateTime
+                  when ::DateTime
                     "#{obj.strftime("%Y-%m-%d %H:%M:%S")}"
                   when ::Time
                     "#{obj.strftime("%H:%M:%S")}"
@@ -118,7 +118,7 @@ module DBI
                   else
                     obj
                 end
-        puts "### Converted #{obj} | #{obj.class} into #{newobj} | #{newobj.class}"
+
         if newobj.object_id == obj.object_id and not (obj.is_a?(::String) || obj.is_a?(System::String))
           [newobj, true]
         else
