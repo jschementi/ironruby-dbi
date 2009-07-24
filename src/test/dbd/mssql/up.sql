@@ -20,7 +20,7 @@ create table boolean_test (num integer, mybool bit);
 ---
 create table time_test (mytime time);
 ---
-create table timestamp_test (mytimestamp timestamp);
+create table timestamp_test (mytimestamp datetime2);
 ---
 create table bit_test (mybit bit);
 ---

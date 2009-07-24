@@ -4,7 +4,7 @@ DBDConfig.set_testbase(:mssql, Class.new(Test::Unit::TestCase) do
     end
 
     def test_base
-      assert_equal(@dbh.driver_name, "MsSql")
+      assert_equal(@dbh.driver_name, "mssql")
       assert_kind_of(DBI::DBD::MSSQL::Database, @dbh.instance_variable_get(:@handle))
     end
 
@@ -16,6 +16,7 @@ DBDConfig.set_testbase(:mssql, Class.new(Test::Unit::TestCase) do
     def setup
       set_base_dbh
       DBDConfig.inject_sql(@dbh, dbtype, "dbd/mssql/up.sql")
+      #puts "\n"
     end
 
     def teardown

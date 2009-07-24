@@ -56,14 +56,14 @@ module DBI
         # converts the types in the array to their specified representation
         # from column types provided at construction time.
         def convert_types(arr)
-            return arr.dup unless @convert_types
+            return arr.collect { |obj| obj.to_s } unless @convert_types
 
             if arr.size != @column_types.size
                 raise TypeError, "Type mapping is not consistent with result"
             end
             new_arr = []
             arr.each_with_index do |item, i|
-                new_arr.push((@column_types[i] || DBI::Type::Varchar).parse(item))
+              new_arr.push((@column_types[i] || DBI::Type::Varchar).parse(item))
             end
 
             return new_arr
@@ -175,16 +175,16 @@ module DBI
                     @arr[conv_param(args[0]), conv_param(args[1])]
                 else
                     results = []
-                    args.flatten.each{ |arg|
-                        case arg
+                    args.flatten.each do |arg|
+                      case arg
                         when Integer
-                            results.push(@arr[arg])
+                          results.push(@arr[arg])
                         when Regexp
-                            results.push(self[@column_names.grep(arg)])
+                          results.push(self[@column_names.grep(arg)])
                         else
-                            results.push(self[conv_param(arg)])
-                        end
-                    }
+                          results.push(self[conv_param(arg)])
+                      end
+                    end
                     results.flatten
                 end
             rescue TypeError

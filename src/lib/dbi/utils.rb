@@ -49,7 +49,7 @@ module DBI::Utils::ConvParam
     # Wrapper to convert arrays of bound objects via DBI::TypeUtil#convert.
     #
     def self.conv_param(driver_name, params)
-        params.each { |k, v| params[k] = DBI::TypeUtil.convert(driver_name, v) }
+        params.each { |k, v| params[k] = DBI::TypeUtil.convert(driver_name, v); } #puts "--- converted (#{driver_name}) #{k}: #{v} | #{v.class} into #{params[k]} | #{params[k].class}" }
     end
 end
 

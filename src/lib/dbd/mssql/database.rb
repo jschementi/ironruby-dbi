@@ -1,75 +1,7 @@
 module DBI
   module DBD
     module MSSQL
-#
-        # Hash to translate MS SQL Server type names to DBI SQL type constants
-        #
-        # Only used in #mssql_type_info.
-        #
-        MSSQL_TO_XOPEN = {
-            "TINYINT"          => [DBI::SQL_TINYINT, 1, nil],
-            "SMALLINT"         => [DBI::SQL_SMALLINT, 2, nil],
-            "INT"              => [DBI::SQL_INTEGER, 4, nil],
-            "INTEGER"          => [DBI::SQL_INTEGER, 4, nil],
-            "BIGINT"           => [DBI::SQL_BIGINT, 8, nil],
-            "REAL"             => [DBI::SQL_REAL, 24, nil],
-            "FLOAT"            => [DBI::SQL_FLOAT, 12, nil],
-            "DECIMAL"          => [DBI::SQL_DECIMAL, 18, nil],
-            "NUMERIC"          => [DBI::SQL_DECIMAL, 18, nil],
-            "MONEY"            => [DBI::SQL_DECIMAL, 8, 4],
-            "SMALLMONEY"       => [DBI::SQL_DECIMAL, 4, 4],
-            "DATE"             => [DBI::SQL_DATE, 10, nil],
-            "TIME"             => [DBI::SQL_TIME, 8, nil],
-            "DATETIME2"        => [DBI::SQL_TIMESTAMP, 19, nil],
-            "DATETIME"         => [DBI::SQL_TIMESTAMP, 19, nil],
-            "CHAR"             => [DBI::SQL_CHAR, 1, nil],
-            "VARCHAR"          => [DBI::SQL_VARCHAR, 255, nil],
-            "NCHAR"            => [DBI::SQL_CHAR, 1, nil],
-            "NVARCHAR"         => [DBI::SQL_VARCHAR, 255, nil],
-            "TEXT"             => [DBI::SQL_VARCHAR, 65535, nil],
-            "NTEXT"            => [DBI::SQL_VARCHAR, 131070, nil],
-            "BINARY"           => [DBI::SQL_VARBINARY, 65535, nil],
-            "VARBINARY"        => [DBI::SQL_VARBINARY, 16277215, nil],
-            "IMAGE"            => [DBI::SQL_LONGVARBINARY, 2147483657, nil],
-            "BIT"              => [DBI::SQL_BIT, 1, nil],
-            "UNIQUEIDENTIFIER" => [DBI::SQL_VARCHAR, 20, nil],
-            "XML"              => [DBI::SQL_VARCHAR, 65535, nil],
-            "TIMESTAMP"        => [DBI::SQL_VARCHAR, 18, nil],
-            nil                => [DBI::SQL_OTHER, nil, nil]
-        }
-
-        MSSQL_TYPEMAP = {
-            "TINYINT"          => DBI::Type::Integer,
-            "SMALLINT"         => DBI::Type::Integer,
-            "INT"              => DBI::Type::Integer,
-            "INTEGER"          => DBI::Type::Integer,
-            "BIGINT"           => DBI::Type::Integer,
-            "REAL"             => DBI::Type::Float,
-            "FLOAT"            => DBI::Type::Float,
-            "DECIMAL"          => DBI::Type::Decimal,
-            "NUMERIC"          => DBI::Type::Decimal,
-            "MONEY"            => DBI::Type::Decimal,
-            "SMALLMONEY"       => DBI::Type::Decimal,
-            "DATE"             => DBI::Type::Timestamp,
-            "TIME"             => DBI::Type::Timestamp,
-            "DATETIME2"        => DBI::Type::Timestamp,
-            "DATETIME"         => DBI::Type::Timestamp,
-            "CHAR"             => DBI::Type::Varchar,
-            "VARCHAR"          => DBI::Type::Varchar,
-            "NCHAR"            => DBI::Type::Varchar,
-            "NVARCHAR"         => DBI::Type::Varchar,
-            "TEXT"             => DBI::Type::Varchar,
-            "NTEXT"            => DBI::Type::Varchar,
-            "BINARY"           => DBI::Type::Varchar,
-            "VARBINARY"        => DBI::Type::Varchar,
-            "IMAGE"            => DBI::Type::Varchar,
-            "BIT"              => DBI::Type::Boolean,
-            "UNIQUEIDENTIFIER" => DBI::Type::Varchar,
-            "XML"              => DBI::Type::Varchar,
-            "TIMESTAMP"        => DBI::Type::Varchar,
-            nil                => DBI::Type::Null
-        }
-      
+       
       class Database < DBI::BaseDatabase
 
 
@@ -141,17 +73,20 @@ module DBI
           stmt.bind_param("table_name", table)
           stmt.execute
           ret = stmt.fetch_all.collect do |row|
+            dtn = row[3].upcase
             ColumnInfo.new({
-                    :name => row[2].to_s,
-                    :type_name => row[3].upcase.to_sym,
-                    :dbi_type => MSSQL_TO_XOPEN[row[3].upcase.to_sym][0],
-                    :precision => row[6].zero? ? row[4] : row[6],
-                    :default => row[8],
-                    :scale => row[7],
-                    :nullable => row[5],
-                    :primary => row[9],
-                    :indexed => row[10],
-                    :unique => row[11]
+                    'name' => row[2].to_s,
+                    'dbi_type' => MSSQL_TYPEMAP[dtn],
+                    'mssql_type_name' => dtn,
+                    'sql_type' =>MSSQL_TO_XOPEN[dtn][0],
+                    'type_name' => DBI::SQL_TYPE_NAMES[MSSQL_TO_XOPEN[dtn][0]],
+                    'precision' => row[6].zero? ? row[4] : row[6],
+                    'default' => row[8],
+                    'scale' => row[7],
+                    'nullable' => row[5],
+                    'primary' => row[9],
+                    'indexed' => row[10],
+                    'unique' => row[11]
             })
           end
           stmt.finish
