@@ -16,7 +16,6 @@ DBDConfig.set_testbase(:mssql, Class.new(Test::Unit::TestCase) do
     def setup
       set_base_dbh
       DBDConfig.inject_sql(@dbh, dbtype, "dbd/mssql/up.sql")
-      #puts "\n"
     end
 
     def teardown

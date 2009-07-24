@@ -21,7 +21,6 @@ module DBI
             parameter.ParameterName = parm_name
             val =  value.is_a?(String) ? value.to_clr_string : value #(value || System::DBNull.value)
             parameter.Value = val
-#              puts "+++ setting param: #{name} with value #{val} and class #{val.class}"
             if @command.parameters.contains(parm_name)
               @command.parameters[parm_name] = parameter
             else

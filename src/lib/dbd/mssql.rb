@@ -105,8 +105,6 @@ module DBI
                     System::DBNull.value
                   when ::String, System::String
                     obj
-                  when System::DBNull
-                    nil
                   when ::TrueClass
                     "1"
                   when ::FalseClass
