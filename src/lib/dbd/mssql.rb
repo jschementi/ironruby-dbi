@@ -82,108 +82,108 @@ module DBI
               System::DBNull     => DBI::DBD::MSSQL::Type::Null
       }
 
-      
+
 
       def self.driver_name
         "mssql"
       end
 
-     DBI::TypeUtil.register_conversion(driver_name) do |obj|
+      DBI::TypeUtil.register_conversion(driver_name) do |obj|
 
-       
-        newobj = case obj
-                 when ::DBI::Binary
+
+        newobj =
+                case obj
+                  when ::DBI::Binary
                     obj.to_s
-                 when ::DateTime
-                     "#{obj.strftime("%Y-%m-%d %H:%M:%S")}"
-                 when ::Time
-                     "#{obj.strftime("%H:%M:%S")}"
-                 when ::Date
-                     "#{obj.strftime("%Y-%m-%d")}"
-                 when ::NilClass
-                     System::DBNull.value             
+                  when ::DBI::Timestamp, ::DateTime
+                    "#{obj.strftime("%Y-%m-%d %H:%M:%S")}"
+                  when ::Time
+                    "#{obj.strftime("%H:%M:%S")}"
+                  when ::Date
+                    "#{obj.strftime("%Y-%m-%d")}"
+                  when ::NilClass
+                    System::DBNull.value
                   when ::String, System::String
                     obj
-          when System::DBNull
-            nil
-          
-          when ::TrueClass
-      "1"
-    when ::FalseClass
-      "0"
+                  when System::DBNull
+                    nil
+                  when ::TrueClass
+                    "1"
+                  when ::FalseClass
+                    "0"
                   when ::BigDecimal
                     obj.to_s("F")
                   when ::Numeric
                     obj.to_s
-                 else
-                     obj
-        end
+                  else
+                    obj
+                end
         puts "### Converted #{obj} | #{obj.class} into #{newobj} | #{newobj.class}"
         if newobj.object_id == obj.object_id and not (obj.is_a?(::String) || obj.is_a?(System::String))
-            [newobj, true]
+          [newobj, true]
         else
-            [newobj, false]
+          [newobj, false]
         end
-    end
+      end
 
 
-    CLR_TYPES = {
-                :TINYINT => "byte",
-                :SMALLINT => "short",
-                :BIGINT => "long",
-                :INT => "int",
-                :FLOAT => "double",
-                :REAL => "float",
-                :SMALLMONEY => "decimal",
-                :MONEY => "decimal",
-                :NUMERIC => "decimal",
-                :DECIMAL => "decimal",
-                :BIT => "bool",
-                :UNIQUEIDENTIFIER => "Guid",
-                :VARCHAR => "string",
-                :NVARCHAR => "string",
-                :TEXT => "string",
-                :NTEXT => "string",
-                :CHAR => "char",
-                :NCHAR => "char",
-                :VARBINARY => "byte[]",
-                :IMAGE => "byte[]",
-                :DATETIME => "DateTime"
-        }
+      CLR_TYPES = {
+              :TINYINT => "byte",
+              :SMALLINT => "short",
+              :BIGINT => "long",
+              :INT => "int",
+              :FLOAT => "double",
+              :REAL => "float",
+              :SMALLMONEY => "decimal",
+              :MONEY => "decimal",
+              :NUMERIC => "decimal",
+              :DECIMAL => "decimal",
+              :BIT => "bool",
+              :UNIQUEIDENTIFIER => "Guid",
+              :VARCHAR => "string",
+              :NVARCHAR => "string",
+              :TEXT => "string",
+              :NTEXT => "string",
+              :CHAR => "char",
+              :NCHAR => "char",
+              :VARBINARY => "byte[]",
+              :IMAGE => "byte[]",
+              :DATETIME => "DateTime"
+      }
 
-        SQL_TYPE_NAMES = {
-                :BIT => "BIT",
-                :TINYINT => "TINYINT",
-                :SMALLINT => "SMALLINT",
-                :INTEGER => "INTEGER",
-                :INT => "INTEGER",
-                :BIGINT => "BIGINT",
-                :FLOAT => "FLOAT",
-                :REAL => "REAL",
-                :DOUBLE => "DOUBLE",
-                :NUMERIC => "NUMERIC",
-                :DECIMAL => "DECIMAL",
-                :CHAR => "CHAR",
-                :NCHAR => "CHAR",
-                :VARCHAR => "VARCHAR",
-                :NVARCHAR => "VARCHAR",
-                :LONGVARCHAR => "LONG VARCHAR",
-                :TEXT => "LONG VARCHAR",
-                :NTEXT => "LONG VARCHAR",
-                :DATE => "DATE",
-                :DATETIME => "DATETIME",
-                :TIME => "TIME",
-                :TIMESTAMP => "TIMESTAMP",
-                :BINARY => "BINARY",
-                :VARBINARY => "VARBINARY",
-                :LONGVARBINARY => "LONG VARBINARY",
-                :IMAGE => "BLOB",
-                :BLOB => "BLOB",
-                :CLOB => "CLOB",
-                :OTHER => "",
-                :BOOLEAN => "BOOLEAN",
-                :UNIQUEIDENTIFIER => "VARCHAR"
-        }  
+      SQL_TYPE_NAMES = {
+              :BIT => "BIT",
+              :TINYINT => "TINYINT",
+              :SMALLINT => "SMALLINT",
+              :INTEGER => "INTEGER",
+              :INT => "INTEGER",
+              :BIGINT => "BIGINT",
+              :FLOAT => "FLOAT",
+              :REAL => "REAL",
+              :DOUBLE => "DOUBLE",
+              :NUMERIC => "NUMERIC",
+              :DECIMAL => "DECIMAL",
+              :CHAR => "CHAR",
+              :NCHAR => "CHAR",
+              :VARCHAR => "VARCHAR",
+              :NVARCHAR => "VARCHAR",
+              :LONGVARCHAR => "LONG VARCHAR",
+              :TEXT => "LONG VARCHAR",
+              :NTEXT => "LONG VARCHAR",
+              :DATE => "DATE",
+              :DATETIME => "DATETIME",
+              :TIME => "TIME",
+              :TIMESTAMP => "TIMESTAMP",
+              :BINARY => "BINARY",
+              :VARBINARY => "VARBINARY",
+              :LONGVARBINARY => "LONG VARBINARY",
+              :IMAGE => "BLOB",
+              :BLOB => "BLOB",
+              :CLOB => "CLOB",
+              :OTHER => "",
+              :BOOLEAN => "BOOLEAN",
+              :UNIQUEIDENTIFIER => "VARCHAR"
+      }
     end
   end
 end
