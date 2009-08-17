@@ -56,7 +56,8 @@ module DBI
         # converts the types in the array to their specified representation
         # from column types provided at construction time.
         def convert_types(arr)
-            return arr.collect { |obj| obj.to_s } unless @convert_types
+           return arr.dup unless @convert_types  
+          #return arr.collect { |obj| obj.to_s } unless @convert_types
 
             if arr.size != @column_types.size
                 raise TypeError, "Type mapping is not consistent with result"
