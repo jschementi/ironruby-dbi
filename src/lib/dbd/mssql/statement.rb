@@ -33,6 +33,7 @@ module DBI
           @current_index = 0
           @rows = []
           @schema = nil
+          @reader.close if @reader and not @reader.is_closed
           @reader = @command.execute_reader
           schema
 

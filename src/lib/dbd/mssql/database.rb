@@ -119,6 +119,8 @@ module DBI
           return res
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
+        ensure
+          st.finish if st
         end
 
         def current_connection
