@@ -1,0 +1,3 @@
+[submodule "source/vendor/rails-mssql-adapter"]
+	path = source/vendor/rails-mssql-adapter
+	url = git@github.com:casualjim/2000-2005-adapter.git

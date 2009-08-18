@@ -1,6 +1,15 @@
 
 MASTER
 
+* Use a lazy match in add_order_by_for_association_limiting! to allow sub selects to be used. Resolves 
+  ticket #11.
+
+* Add default rake task back for testing. Runs the namespaced sqlserver:test_sqlserver_odbc. 
+  Resolves ticket #10 [Ken Collins]
+
+* Default value detection in column_definitions is kinder to badly formatted, or long winded user
+  defined functions, for default values. Resolves ticket #8 [Ken Collins]
+
 * Make sure bigint SQL Server data type can be used and converted back to Bignum as expected. [Ken Collins]
 
 

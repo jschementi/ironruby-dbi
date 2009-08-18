@@ -698,7 +698,7 @@ module ActiveRecord
         # Disertation http://gist.github.com/24073
         # Information http://weblogs.sqlteam.com/jeffs/archive/2007/12/13/select-distinct-order-by-error.aspx
         return sql if options[:order].blank?
-        columns = sql.match(/SELECT\s+DISTINCT(.*)FROM/)[1].strip
+        columns = sql.match(/SELECT\s+DISTINCT(.*?)FROM/)[1].strip
         sql.sub!(/SELECT\s+DISTINCT/,'SELECT')
         sql << "GROUP BY #{columns} ORDER BY #{order_to_min_set(options[:order])}"
       end
@@ -1081,7 +1081,8 @@ module ActiveRecord
                                when nil, '(null)', '(NULL)'
                                  nil
                                else
-                                 ci[:default_value].match(/\A\(+N?'?(.*?)'?\)+\Z/)[1]
+                                 match_data = ci[:default_value].match(/\A\(+N?'?(.*?)'?\)+\Z/)
+                                 match_data ? match_data[1] : nil
                                end
           ci[:null] = ci[:is_nullable].to_i == 1 ; ci.delete(:is_nullable)
           ci

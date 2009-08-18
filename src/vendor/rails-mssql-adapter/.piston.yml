@@ -1,8 +1,0 @@
---- 
-format: 1
-handler: 
-  commit: f234575c9accd1991701d6ce0c1edddd8ef1191c
-  branch: master
-lock: false
-repository_class: Piston::Git::Repository
-repository_url: git@github.com:casualjim/2000-2005-adapter.git

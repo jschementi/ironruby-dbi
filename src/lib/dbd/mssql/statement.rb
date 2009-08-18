@@ -62,6 +62,7 @@ module DBI
         end
 
         def cancel
+          @reader.close if @reader and not @reader.is_closed
           @command.cancel
         end
 
