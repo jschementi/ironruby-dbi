@@ -11,7 +11,7 @@ module DBI
         end
 
         def disconnect
-          @trans.rollback unless @trans.nil? && @attr['AutoCommit']
+          rollback unless @trans.nil? && @attr['AutoCommit']
           @handle.close
         rescue RuntimeError => err
           raise DBI::DatabaseError.new(err.message)
