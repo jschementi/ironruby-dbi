@@ -1,8 +1,13 @@
 require 'active_record/connection_adapters/abstract_adapter'
+require 'active_support/core_ext/kernel/requires'
 require_library_or_gem 'dbi' unless defined?(DBI)
 require 'core_ext/dbi'
 require 'core_ext/active_record'
 require 'base64'
+
+class System::Data::SqlClient::SqlException
+remove_method :class
+end
 
 module ActiveRecord
   
@@ -13,17 +18,33 @@ module ActiveRecord
       mode        = config[:mode] ? config[:mode].to_s.upcase : 'ADO'
       username    = config[:username] ? config[:username].to_s : 'sa'
       password    = config[:password] ? config[:password].to_s : ''
+      database    = config[:database]
+      host        = config[:host] ? config[:host].to_s : 'localhost'
+      integrated_security = config[:integrated_security]
       if mode == "ODBC"
         raise ArgumentError, "Missing DSN. Argument ':dsn' must be set in order for this adapter to work." unless config.has_key?(:dsn)
         dsn       = config[:dsn]
         driver_url = "DBI:ODBC:#{dsn}"
-      else
+        connection_options = [driver_url, username, password]
+      elsif mode == "ADO"
         raise ArgumentError, "Missing Database. Argument ':database' must be set in order for this adapter to work." unless config.has_key?(:database)
-        database  = config[:database]
-        host      = config[:host] ? config[:host].to_s : 'localhost'
-        driver_url = "DBI:ADO:Provider=SQLOLEDB;Data Source=#{host};Initial Catalog=#{database};User ID=#{username};Password=#{password};"
+        if integrated_security
+          connection_options = ["DBI:ADO:Provider=SQLOLEDB;Data Source=#{host};Initial Catalog=#{database};Integrated Security=SSPI"]
+        else
+          driver_url = "DBI:ADO:Provider=SQLOLEDB;Data Source=#{host};Initial Catalog=#{database};User ID=#{username};Password=#{password};"
+          connection_options = [driver_url, username, password]
+        end
+      elsif mode == "ADONET"
+        raise ArgumentError, "Missing Database. Argument ':database' must be set in order for this adapter to work." unless config.has_key?(:database)
+        if integrated_security
+          connection_options = ["DBI:MSSQL:server=#{host};initial catalog=#{database};integrated security=true"]
+        else
+          connection_options = ["DBI:MSSQL:server=#{host};initial catalog=#{database};user id=#{username};password=#{password}"]
+        end
+      else
+        raise "Unknown mode #{mode}"
       end
-      ConnectionAdapters::SQLServerAdapter.new(logger, [driver_url, username, password])
+      ConnectionAdapters::SQLServerAdapter.new(logger, connection_options)
     end
     
     protected
@@ -562,9 +583,10 @@ module ActiveRecord
       end
       
       def tables(name = nil)
-        info_schema_query do
-          select_values "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME <> 'dtproperties'"
-        end
+        @cached_tables ||= info_schema_query do
+           select_values "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME <> 'dtproperties'"
+         end
+        @cached_tables
       end
       
       def views(name = nil)
@@ -771,8 +793,7 @@ module ActiveRecord
       # CONNECTION MANAGEMENT ====================================#
       
       def connect
-        driver_url, username, password = @connection_options
-        @connection = DBI.connect(driver_url, username, password)
+        @connection = DBI.connect(*@connection_options)
         configure_connection
       rescue
         raise unless @auto_connecting

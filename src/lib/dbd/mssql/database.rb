@@ -11,9 +11,12 @@ module DBI
         end
 
         def disconnect
-          rollback unless @trans.nil? && @attr['AutoCommit']
+          unless @trans.nil?
+            @trans.rollback unless @attr['AutoCommit']
+            @trans = nil
+          end
           @handle.close
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -30,13 +33,13 @@ module DBI
           rescue
             return false
           end
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def tables
           @handle.get_schema("Tables").rows.collect { |row| row["TABLE_NAME"].to_s }
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -98,7 +101,7 @@ module DBI
             @trans.commit if @trans
             @trans = @handle.begin_transaction
           end
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -107,7 +110,7 @@ module DBI
             @trans.rollback if @trans
             @trans = @handle.begin_transaction
           end
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -117,7 +120,7 @@ module DBI
           res = st.execute
           st.finish
           return res
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         ensure
           st.finish if st

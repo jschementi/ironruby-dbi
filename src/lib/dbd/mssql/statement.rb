@@ -41,7 +41,7 @@ module DBI
             finish
           end
           @reader.records_affected
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -51,14 +51,14 @@ module DBI
             res = read_row(@reader)
           end
           res
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
         def finish
           @reader.close if @reader and not @reader.is_closed
           
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 
@@ -94,7 +94,7 @@ module DBI
             }
           end 
           infos
-        rescue RuntimeError => err
+        rescue RuntimeError, System::Data::SqlClient::SqlException => err
           raise DBI::DatabaseError.new(err.message)
         end
 

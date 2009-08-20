@@ -43,7 +43,7 @@ module DBI
       connection.connection_string = dbname
       connection.open
       return create_database(connection, attr);
-    rescue RuntimeError => err
+    rescue RuntimeError, System::Data::SqlClient::SqlException => err
       raise DBI::DatabaseError.new(err.message)
     end
 
