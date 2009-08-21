@@ -7,7 +7,7 @@ module DBI
 
         def initialize(dbd_db, attr)
           super
-          @attr['AutoCommit'] = true
+          self['AutoCommit'] = true
         end
 
         def disconnect
