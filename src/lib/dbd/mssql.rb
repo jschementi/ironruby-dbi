@@ -7,9 +7,9 @@ module DBI
 
     module MSSQL
 
-      VERSION          = "0.2"
+      VERSION          = "0.1.0"
       USED_DBD_VERSION = "0.4.0"
-      DESCRIPTION      = "ADO.NET Microsoft SQL Server DBI DBD"
+      DESCRIPTION      = "ADO.NET DBI DBD"
 
       require File.dirname(__FILE__) + "/mssql/types"
 
